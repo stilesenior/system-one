@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1090,9 +1091,9 @@ async function sendMsg() {
     .map(m => ({ role: m.role, content: m.content }));
 
   try {
-    const res = await fetch('https://https://uyujekukxtpcmwihugfs.supabase.co/functions/v1/cloude-proxi', {
+    const res = await fetch('https://uyujekukxtpcmwihugfs.supabase.co/functions/v1/cloude-proxi', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 1000,
@@ -1116,7 +1117,7 @@ async function sendMsg() {
 // PREMIUM
 // ────────────────────────────────────────────────
 // ── Número de WhatsApp de SR.STILE (con código de país, sin +)
-const WA_NUMBER = '5492612473378'; // ← CAMBIÁ POR TU NÚMERO REAL
+const WA_NUMBER = '5492645000000'; // ← CAMBIÁ POR TU NÚMERO REAL
 
 function showPremium() {
   // Armar mensaje pre-escrito con el nombre del usuario
