@@ -1,4 +1,16 @@
 <!DOCTYPE html>
+<!-- 1. Cargar la librería de Supabase (no cambiar este enlace) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- 2. Inicializar tu conexión -->
+<script>
+  const SUPABASE_URL = 'https://uyujekukxtpcmwihugfs.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dWpla3VreHRwY213aWh1Z2ZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5ODM1NzYsImV4cCI6MjEwMTU1OTU3Nn0.uGchVX9CFNs4X448l9l_wIKngNIzi4V_RQMPvGTn9O4';
+
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+
+
 <html lang="es">
 <head>
 <meta charset="UTF-8">
