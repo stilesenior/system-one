@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYSTEM ONE</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&family=Barlow:wght@300;400;500&display=swap');
+
+  :root {
+    --black: #060606;
+    --green: #4ADE29;
+    --green-dim: #2a7d18;
+    --white: #F2F2F2;
+    --gray: #1a1a1a;
+    --gray-mid: #2e2e2e;
+    --gray-light: #444;
+    --locked: #2a2a2a;
+    --locked-text: #555;
+    --nexus: #4ADE29;
+    --prince: #a78bfa;
+    --mark: #38bdf8;
+    --mike: #fb923c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Barlow', sans-serif;
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── SPLASH ── */
+  #splash {
+    position: fixed; inset: 0;
+    background: var(--black);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 999;
+    gap: 16px;
+    transition: opacity .6s ease;
+  }
+  #splash .logo-big {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 12vw, 96px);
+    letter-spacing: 6px;
+    color: var(--white);
+    line-height: 1;
+  }
+  #splash .logo-big span { color: var(--green); }
+  #splash .tagline {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--locked-text);
+  }
+  #splash .pulse {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 1.2s infinite;
+    margin-top: 32px;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.5)} }
+
+  /* ── ONBOARDING ── */
+  #onboarding {
+    display: none;
+    position: fixed; inset: 0;
+    background: var(--black);
+    z-index: 998;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    gap: 0;
+  }
+  .ob-card {
+    width: 100%; max-width: 480px;
+    display: flex; flex-direction: column;
+    gap: 24px;
+  }
+  .ob-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 4px;
+    color: var(--green);
+  }
+  .ob-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(28px, 7vw, 48px);
+    line-height: 1.05;
+    color: var(--white);
+  }
+  .ob-sub {
+    font-size: 14px;
+    color: #888;
+    line-height: 1.6;
+  }
+  .ob-input {
+    background: var(--gray);
+    border: 1px solid var(--gray-mid);
+    border-radius: 8px;
+    padding: 14px 16px;
+    color: var(--white);
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    width: 100%;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .ob-input:focus { border-color: var(--green); }
+  .ob-input::placeholder { color: #555; }
+  .ob-btn {
+    background: var(--green);
+    color: var(--black);
+    border: none;
+    border-radius: 8px;
+    padding: 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: opacity .2s;
+  }
+  .ob-btn:hover { opacity: .85; }
+  .ob-skip {
+    font-size: 12px;
+    color: #444;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: underline;
+    letter-spacing: 1px;
+  }
+  .ob-step { display: none; }
+  .ob-step.active { display: flex; flex-direction: column; gap: 16px; }
+
+  /* ── MAIN LAYOUT ── */
+  #app {
+    display: none;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray-mid);
+    flex-shrink: 0;
+  }
+  .topbar-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    color: var(--white);
+  }
+  .topbar-logo span { color: var(--green); }
+  .premium-badge {
+    background: var(--green);
+    color: var(--black);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+  .free-badge {
+    border: 1px solid #333;
+    color: #555;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  /* ── BODY: sidebar + chat ── */
+  .body-wrap {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--gray-mid);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 0;
+    gap: 4px;
+    overflow-y: auto;
+  }
+  @media(max-width:600px) {
+    .sidebar { display: none; }
+    .mobile-nav { display: flex !important; }
+  }
+  .sidebar-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #444;
+    padding: 8px 16px 4px;
+  }
+  .agent-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--white);
+    width: 100%;
+    text-align: left;
+    border-radius: 0;
+    transition: background .15s;
+    position: relative;
+  }
+  .agent-btn:hover { background: var(--gray); }
+  .agent-btn.active { background: var(--gray); }
+  .agent-btn.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+  }
+  .agent-btn.active.nexus::before { background: var(--nexus); }
+  .agent-btn.active.prince::before { background: var(--prince); }
+  .agent-btn.active.mark::before { background: var(--mark); }
+  .agent-btn.active.mike::before { background: var(--mike); }
+  .agent-btn.active.mesa::before { background: var(--green); }
+
+  .agent-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .nexus .agent-avatar { background: #0d2b06; color: var(--nexus); border: 1px solid var(--green-dim); }
+  .prince .agent-avatar { background: #1e1530; color: var(--prince); border: 1px solid #5b3fa0; }
+  .mark .agent-avatar { background: #0c1e2b; color: var(--mark); border: 1px solid #1e5d80; }
+  .mike .agent-avatar { background: #2b1506; color: var(--mike); border: 1px solid #8b3a00; }
+  .mesa .agent-avatar { background: #111; color: var(--green); border: 1px solid #333; font-size: 16px; }
+
+  .locked .agent-avatar { background: var(--locked); color: var(--locked-text); border: 1px solid #333; }
+  .locked .agent-name { color: var(--locked-text); }
+  .locked .agent-role { color: #444; }
+
+  .agent-info { flex: 1; min-width: 0; }
+  .agent-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+  .agent-role {
+    font-size: 11px;
+    color: #666;
+    margin-top: 2px;
+  }
+  .lock-icon { font-size: 12px; color: #444; }
+
+  .unlock-btn {
+    margin: 16px;
+    background: transparent;
+    border: 1px solid var(--green-dim);
+    color: var(--green);
+    padding: 10px;
+    border-radius: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .2s;
+    text-align: center;
+  }
+  .unlock-btn:hover { background: #0d2b06; }
+
+  /* ── CHAT AREA ── */
+  .chat-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+  .chat-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .chat-header-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+  }
+  .chat-header-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  .chat-header-role { font-size: 11px; color: #666; }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    margin-left: auto;
+    box-shadow: 0 0 6px var(--green);
+  }
+
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
+  }
+  .messages::-webkit-scrollbar { width: 4px; }
+  .messages::-webkit-scrollbar-track { background: transparent; }
+  .messages::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+  .msg {
+    display: flex;
+    gap: 10px;
+    max-width: 85%;
+    animation: fadeIn .3s ease;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+  .msg-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .msg-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .msg-sender {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #555;
+  }
+  .msg.user .msg-sender { text-align: right; }
+  .msg-text {
+    background: var(--gray);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--white);
+  }
+  .msg.user .msg-text {
+    background: #0d2b06;
+    border: 1px solid var(--green-dim);
+  }
+  .msg-text.nexus-msg { border-left: 2px solid var(--nexus); }
+  .msg-text.prince-msg { border-left: 2px solid var(--prince); }
+  .msg-text.mark-msg { border-left: 2px solid var(--mark); }
+  .msg-text.mike-msg { border-left: 2px solid var(--mike); }
+
+  /* typing indicator */
+  .typing { display: flex; gap: 5px; padding: 12px 14px; align-items: center; }
+  .typing span {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #444;
+    animation: blink 1.2s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: .2s; }
+  .typing span:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+
+  /* input */
+  .input-row {
+    padding: 12px 16px;
+    border-top: 1px solid var(--gray-mid);
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    flex-shrink: 0;
+  }
+  #msgInput {
+    flex: 1;
+    background: var(--gray);
+    border: 1px solid var(--gray-mid);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--white);
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    max-height: 120px;
+    min-height: 44px;
+    line-height: 1.4;
+    transition: border-color .2s;
+  }
+  #msgInput:focus { border-color: var(--green-dim); }
+  #msgInput::placeholder { color: #444; }
+  #sendBtn {
+    width: 44px; height: 44px;
+    background: var(--green);
+    border: none;
+    border-radius: 10px;
+    color: var(--black);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: opacity .2s;
+  }
+  #sendBtn:hover { opacity: .85; }
+  #sendBtn:disabled { opacity: .3; cursor: not-allowed; }
+
+  /* ── MOBILE NAV ── */
+  .mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #0d0d0d;
+    border-top: 1px solid var(--gray-mid);
+    padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+    z-index: 100;
+    justify-content: space-around;
+  }
+  .mob-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    padding: 4px 8px;
+    flex: 1;
+    transition: color .15s;
+  }
+  .mob-btn.active { color: var(--green); }
+  .mob-btn.locked-mob { color: #333; }
+  .mob-icon {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 12px;
+    background: var(--gray);
+  }
+  .mob-btn.active .mob-icon { background: #0d2b06; color: var(--green); }
+  .mob-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── PREMIUM MODAL ── */
+  #premiumModal {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.85);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-card {
+    background: #0f0f0f;
+    border: 1px solid var(--green-dim);
+    border-radius: 16px;
+    padding: 32px 28px;
+    max-width: 400px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .modal-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 3px;
+    line-height: 1;
+    color: var(--white);
+  }
+  .modal-title span { color: var(--green); }
+  .modal-sub { font-size: 14px; color: #888; line-height: 1.6; }
+  .modal-features { display: flex; flex-direction: column; gap: 10px; }
+  .modal-feature {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: #bbb;
+  }
+  .modal-feature-icon { color: var(--green); font-size: 15px; }
+  .modal-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 40px;
+    color: var(--green);
+    letter-spacing: 2px;
+  }
+  .modal-price span { font-size: 16px; color: #666; letter-spacing: 1px; }
+  .modal-btn {
+    background: var(--green);
+    color: var(--black);
+    border: none;
+    border-radius: 10px;
+    padding: 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: opacity .2s;
+  }
+  .modal-btn:hover { opacity: .85; }
+  .modal-close {
+    text-align: center;
+    font-size: 12px;
+    color: #444;
+    cursor: pointer;
+    letter-spacing: 1px;
+  }
+  /* DEMO: simulate premium unlock */
+  .demo-unlock {
+    background: transparent;
+    border: 1px solid #333;
+    color: #555;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 11px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    text-align: center;
+  }
+  .demo-unlock:hover { border-color: #555; color: #888; }
+
+  /* ── MESA ESTRATÉGICA locked overlay ── */
+  .mesa-locked {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 32px;
+    text-align: center;
+  }
+  .mesa-locked-icon { font-size: 48px; opacity: .3; }
+  .mesa-locked-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: #444;
+  }
+  .mesa-locked-sub { font-size: 13px; color: #444; max-width: 280px; line-height: 1.6; }
+
+  /* chat header colors per agent */
+  .h-nexus { background: #0d2b06; color: var(--nexus); }
+  .h-prince { background: #1e1530; color: var(--prince); }
+  .h-mark { background: #0c1e2b; color: var(--mark); }
+  .h-mike { background: #2b1506; color: var(--mike); }
+  .h-mesa { background: #111; color: var(--green); }
+
+  /* mobile bottom padding for chat */
+  @media(max-width:600px) {
+    .messages { padding-bottom: 80px; }
+    .input-row { padding-bottom: max(12px, env(safe-area-inset-bottom)); margin-bottom: 56px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="logo-big">SYSTEM<span>ONE</span></div>
+  <div class="tagline">El sistema que te acompaña y te ayuda a ejecutar</div>
+  <div class="pulse"></div>
+</div>
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="ob-card">
+    <!-- Step 1: nombre -->
+    <div class="ob-step active" id="ob1">
+      <div class="ob-logo">SYSTEM ONE</div>
+      <div class="ob-title">¿Cómo te llamás?</div>
+      <div class="ob-sub">NEXUS necesita saber con quién habla antes de empezar.</div>
+      <input class="ob-input" id="obName" placeholder="Tu nombre" maxlength="40" />
+      <button class="ob-btn" onclick="goOb2()">CONTINUAR →</button>
+    </div>
+    <!-- Step 2: situación -->
+    <div class="ob-step" id="ob2">
+      <div class="ob-logo">SYSTEM ONE</div>
+      <div class="ob-title">¿Cuál es tu situación hoy?</div>
+      <div class="ob-sub">Esto le permite a NEXUS entender desde dónde arrancás.</div>
+      <select class="ob-input" id="obSit" style="cursor:pointer;">
+        <option value="">Seleccioná una opción</option>
+        <option value="emprendedor">Tengo un negocio y quiero hacerlo crecer</option>
+        <option value="nuevo">Quiero emprender pero no sé por dónde arrancar</option>
+        <option value="desempleado">Busco trabajo y generar ingresos</option>
+        <option value="oficio">Tengo un oficio y quiero monetizarlo mejor</option>
+      </select>
+      <button class="ob-btn" onclick="goOb3()">CONTINUAR →</button>
+      <div class="ob-skip" onclick="goOb2back()">← Volver</div>
+    </div>
+    <!-- Step 3: objetivo -->
+    <div class="ob-step" id="ob3">
+      <div class="ob-logo">SYSTEM ONE</div>
+      <div class="ob-title">¿Cuál es tu objetivo en los próximos 90 días?</div>
+      <div class="ob-sub">Escribilo en una sola frase. Sin filtros.</div>
+      <textarea class="ob-input" id="obObj" placeholder="Ej: Conseguir mis primeros 5 clientes pagos..." style="resize:none;height:80px;"></textarea>
+      <button class="ob-btn" onclick="finishOnboarding()">INGRESAR AL SISTEMA →</button>
+      <div class="ob-skip" onclick="goOb2()">← Volver</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">SYSTEM<span>ONE</span></div>
+    <div id="planBadge" class="free-badge">FREE</div>
+  </div>
+  <div class="body-wrap">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-label">Tu Equipo</div>
+
+      <button class="agent-btn nexus active" onclick="switchAgent('nexus')" id="btn-nexus">
+        <div class="agent-avatar">NX</div>
+        <div class="agent-info">
+          <div class="agent-name">NEXUS</div>
+          <div class="agent-role">Coordinador General</div>
+        </div>
+      </button>
+
+      <button class="agent-btn prince locked" onclick="agentClick('prince')" id="btn-prince">
+        <div class="agent-avatar">PR</div>
+        <div class="agent-info">
+          <div class="agent-name">PRINCE</div>
+          <div class="agent-role">Área Creativa</div>
+        </div>
+        <div class="lock-icon">🔒</div>
+      </button>
+
+      <button class="agent-btn mark locked" onclick="agentClick('mark')" id="btn-mark">
+        <div class="agent-avatar">MK</div>
+        <div class="agent-info">
+          <div class="agent-name">MARK</div>
+          <div class="agent-role">Área Administrativa</div>
+        </div>
+        <div class="lock-icon">🔒</div>
+      </button>
+
+      <button class="agent-btn mike locked" onclick="agentClick('mike')" id="btn-mike">
+        <div class="agent-avatar">MI</div>
+        <div class="agent-info">
+          <div class="agent-name">MIKE</div>
+          <div class="agent-role">Área de Producción</div>
+        </div>
+        <div class="lock-icon">🔒</div>
+      </button>
+
+      <div class="sidebar-label" style="margin-top:8px;">Premium</div>
+
+      <button class="agent-btn mesa locked" onclick="agentClick('mesa')" id="btn-mesa">
+        <div class="agent-avatar">⬡</div>
+        <div class="agent-info">
+          <div class="agent-name">MESA</div>
+          <div class="agent-role">Estratégica</div>
+        </div>
+        <div class="lock-icon">🔒</div>
+      </button>
+
+      <button class="unlock-btn" onclick="showPremium()">⚡ DESBLOQUEAR EQUIPO</button>
+    </div>
+
+    <!-- CHAT -->
+    <div class="chat-wrap">
+      <div class="chat-header" id="chatHeader">
+        <div class="chat-header-avatar h-nexus" id="chatAvatar">NX</div>
+        <div>
+          <div class="chat-header-name" id="chatName">NEXUS</div>
+          <div class="chat-header-role" id="chatRole">Coordinador General</div>
+        </div>
+        <div class="status-dot"></div>
+      </div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="input-row" id="inputRow">
+        <textarea id="msgInput" placeholder="Escribí tu mensaje..." rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
+          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+        <button id="sendBtn" onclick="sendMsg()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE NAV -->
+  <div class="mobile-nav" id="mobileNav">
+    <button class="mob-btn active" onclick="switchAgent('nexus')" id="mob-nexus">
+      <div class="mob-icon">NX</div>
+      <div class="mob-label">Nexus</div>
+    </button>
+    <button class="mob-btn locked-mob" onclick="agentClick('prince')" id="mob-prince">
+      <div class="mob-icon" style="opacity:.4">PR</div>
+      <div class="mob-label">Prince</div>
+    </button>
+    <button class="mob-btn locked-mob" onclick="agentClick('mark')" id="mob-mark">
+      <div class="mob-icon" style="opacity:.4">MK</div>
+      <div class="mob-label">Mark</div>
+    </button>
+    <button class="mob-btn locked-mob" onclick="agentClick('mike')" id="mob-mike">
+      <div class="mob-icon" style="opacity:.4">MI</div>
+      <div class="mob-label">Mike</div>
+    </button>
+    <button class="mob-btn locked-mob" onclick="agentClick('mesa')" id="mob-mesa">
+      <div class="mob-icon" style="opacity:.4">⬡</div>
+      <div class="mob-label">Mesa</div>
+    </button>
+  </div>
+</div>
+
+<!-- PREMIUM MODAL -->
+<div id="premiumModal">
+  <div class="modal-card">
+    <div class="modal-title">SYSTEM ONE <span>PREMIUM</span></div>
+    <div class="modal-sub">Desbloqueá el equipo completo. Cada área trabaja para vos, coordinada por NEXUS.</div>
+    <div class="modal-features">
+      <div class="modal-feature"><span class="modal-feature-icon">◆</span> Acceso a PRINCE — Área Creativa</div>
+      <div class="modal-feature"><span class="modal-feature-icon">◆</span> Acceso a MARK — Área Administrativa</div>
+      <div class="modal-feature"><span class="modal-feature-icon">◆</span> Acceso a MIKE — Área de Producción</div>
+      <div class="modal-feature"><span class="modal-feature-icon">◆</span> Mesa Estratégica — los 4 trabajan juntos</div>
+      <div class="modal-feature"><span class="modal-feature-icon">◆</span> Plan de ejecución 90 días</div>
+    </div>
+    <div class="modal-price">$XX.XXX <span>/ mes</span></div>
+
+    <!-- BOTÓN WHATSAPP PRINCIPAL -->
+    <a id="waUpgradeBtn" href="#" target="_blank" style="
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      background:#25D366; color:#000; border-radius:10px; padding:16px;
+      font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:3px;
+      text-decoration:none; transition:opacity .2s;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      QUIERO PREMIUM
+    </a>
+
+    <div style="font-size:11px;color:#444;text-align:center;letter-spacing:1px;">
+      Te contactamos en menos de 24hs para activar tu cuenta
+    </div>
+
+    <div class="demo-unlock" onclick="activatePremiumDemo()">[ DEMO: Simular activación Premium ]</div>
+    <div class="modal-close" onclick="hidePremium()">Cerrar</div>
+  </div>
+</div>
+
+<script>
+// ────────────────────────────────────────────────
+// STATE
+// ────────────────────────────────────────────────
+let userName = '';
+let userSit = '';
+let userObj = '';
+let isPremium = false;
+let currentAgent = 'nexus';
+let conversationHistory = { nexus: [], prince: [], mark: [], mike: [], mesa: [] };
+let isLoading = false;
+
+const AGENTS = {
+  nexus: {
+    name: 'NEXUS', role: 'Coordinador General',
+    avatarText: 'NX', avatarClass: 'h-nexus', color: '#4ADE29',
+    msgClass: 'nexus-msg',
+    prompt: (n,s,o) => `Sos NEXUS, el Coordinador General de SYSTEM ONE. Hablás en español argentino, de forma directa, estratégica y motivadora. Nunca sos un chatbot genérico. Sos el punto de contacto principal de un equipo estratégico especializado.
+
+El usuario se llama ${n}. Su situación: "${s}". Su objetivo a 90 días: "${o}".
+
+Tu función: acompañar al usuario en la EJECUCIÓN de sus objetivos. No des teoría. Preguntá qué está ejecutando hoy. Detectá bloqueos. Generá acción concreta. Recordá siempre el contexto de la conversación.
+
+Cuando el usuario sea plan Free, sos el único que habla con él. Coordinás internamente con las otras áreas pero él solo te ve a vos.
+
+Respondé en 2-4 párrafos máximo. Siempre terminá con una pregunta o una acción concreta.`
+  },
+  prince: {
+    name: 'PRINCE', role: 'Área Creativa',
+    avatarText: 'PR', avatarClass: 'h-prince', color: '#a78bfa',
+    msgClass: 'prince-msg',
+    prompt: (n,s,o) => `Sos PRINCE, responsable del Área Creativa en SYSTEM ONE. Hablás en español argentino. Sos el estratega de marketing, branding y comunicación del equipo.
+
+El usuario se llama ${n}. Su situación: "${s}". Su objetivo a 90 días: "${o}".
+
+Tu función: ayudarlo a posicionarse, comunicar su valor, construir su marca y generar presencia. Pensás en contenido, mensaje, audiencia. Sos creativo pero estratégico: cada idea tiene un propósito.
+
+Respondé en 2-4 párrafos. Siempre terminá con una táctica concreta o una pregunta que lo haga pensar en su marca.`
+  },
+  mark: {
+    name: 'MARK', role: 'Área Administrativa',
+    avatarText: 'MK', avatarClass: 'h-mark', color: '#38bdf8',
+    msgClass: 'mark-msg',
+    prompt: (n,s,o) => `Sos MARK, responsable del Área Administrativa en SYSTEM ONE. Hablás en español argentino. Sos el estratega de finanzas, KPIs, organización y procesos del equipo.
+
+El usuario se llama ${n}. Su situación: "${s}". Su objetivo a 90 días: "${o}".
+
+Tu función: ayudarlo a ordenar sus números, definir métricas claras, organizarse mejor y tomar decisiones basadas en datos reales. Sos preciso, analítico pero práctico.
+
+Respondé en 2-4 párrafos. Siempre terminá con un número concreto, un KPI o una acción de organización específica.`
+  },
+  mike: {
+    name: 'MIKE', role: 'Área de Producción',
+    avatarText: 'MI', avatarClass: 'h-mike', color: '#fb923c',
+    msgClass: 'mike-msg',
+    prompt: (n,s,o) => `Sos MIKE, responsable del Área de Producción en SYSTEM ONE. Hablás en español argentino. Sos el estratega de producto, servicios, validación e implementación del equipo.
+
+El usuario se llama ${n}. Su situación: "${s}". Su objetivo a 90 días: "${o}".
+
+Tu función: ayudarlo a desarrollar y mejorar lo que ofrece, validar sus ideas rápido, construir sistemas que escalen. Sos práctico, orientado a la ejecución, no a la teoría.
+
+Respondé en 2-4 párrafos. Siempre terminá con un paso de validación o implementación concreto.`
+  },
+  mesa: {
+    name: 'MESA ESTRATÉGICA', role: 'Todo el equipo — en tiempo real',
+    avatarText: '⬡', avatarClass: 'h-mesa', color: '#4ADE29',
+    msgClass: 'nexus-msg',
+    prompt: (n,s,o) => `Sos el sistema de Mesa Estratégica de SYSTEM ONE. Representás la reunión completa del equipo: NEXUS (Coordinador), PRINCE (Creativo), MARK (Administrativo) y MIKE (Producción).
+
+El usuario se llama ${n}. Su situación: "${s}". Su objetivo a 90 días: "${o}".
+
+Cuando el usuario plantea un tema, NEXUS abre la reunión, cada área aporta su perspectiva (marcada claramente con su nombre y emoji), y NEXUS cierra con una conclusión unificada y un plan de acción.
+
+Formato de respuesta:
+**NEXUS abre la mesa:**
+[contexto del tema]
+
+**PRINCE — Creativo:**
+[perspectiva creativa/marketing]
+
+**MARK — Administrativo:**
+[perspectiva financiera/organizacional]
+
+**MIKE — Producción:**
+[perspectiva de producto/implementación]
+
+**NEXUS — Conclusión:**
+[síntesis y próximos pasos concretos]
+
+Hablá en español argentino. Sé directo y estratégico.`
+  }
+};
+
+// ────────────────────────────────────────────────
+// SPLASH → ONBOARDING
+// ────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  // check if returning user
+  const saved = localStorage.getItem('s1_user');
+  if (saved) {
+    const u = JSON.parse(saved);
+    userName = u.name; userSit = u.sit; userObj = u.obj;
+    isPremium = u.premium || false;
+    conversationHistory = u.history || { nexus:[], prince:[], mark:[], mike:[], mesa:[] };
+    setTimeout(() => {
+      document.getElementById('splash').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('splash').style.display = 'none';
+        launchApp(false);
+      }, 600);
+    }, 1200);
+  } else {
+    setTimeout(() => {
+      document.getElementById('splash').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('splash').style.display = 'none';
+        document.getElementById('onboarding').style.display = 'flex';
+      }, 600);
+    }, 2000);
+  }
+});
+
+function goOb2() {
+  const n = document.getElementById('obName').value.trim();
+  if (!n) { document.getElementById('obName').focus(); return; }
+  userName = n;
+  document.getElementById('ob1').classList.remove('active');
+  document.getElementById('ob2').classList.add('active');
+}
+function goOb2back() {
+  document.getElementById('ob2').classList.remove('active');
+  document.getElementById('ob1').classList.add('active');
+}
+function goOb3() {
+  const s = document.getElementById('obSit').value;
+  if (!s) return;
+  userSit = document.getElementById('obSit').options[document.getElementById('obSit').selectedIndex].text;
+  document.getElementById('ob2').classList.remove('active');
+  document.getElementById('ob3').classList.add('active');
+}
+function finishOnboarding() {
+  const o = document.getElementById('obObj').value.trim();
+  if (!o) { document.getElementById('obObj').focus(); return; }
+  userObj = o;
+  document.getElementById('onboarding').style.display = 'none';
+  launchApp(true);
+}
+
+// ────────────────────────────────────────────────
+// APP LAUNCH
+// ────────────────────────────────────────────────
+function launchApp(isNew) {
+  document.getElementById('app').style.display = 'flex';
+  applyPremiumState();
+  renderMessages();
+  if (isNew) {
+    // NEXUS intro message
+    const intro = `Hola ${userName}, soy NEXUS — el Coordinador General de tu equipo en SYSTEM ONE.\n\nLeí tu situación y tu objetivo: "${userObj}". Arrancamos desde ahí.\n\nAntes de darte una dirección, necesito entender dónde estás parado hoy. ¿Qué es lo primero que intentaste hacer para avanzar hacia ese objetivo, y qué frenó ese avance?`;
+    addAgentMessage('nexus', intro);
+  } else {
+    renderMessages();
+  }
+  saveUser();
+}
+
+// ────────────────────────────────────────────────
+// AGENT SWITCHING
+// ────────────────────────────────────────────────
+function switchAgent(agent) {
+  if (!isPremium && agent !== 'nexus') { showPremium(); return; }
+  if (agent === 'mesa' && !isPremium) { showPremium(); return; }
+  currentAgent = agent;
+  // sidebar
+  document.querySelectorAll('.agent-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('btn-' + (agent === 'mesa' ? 'mesa' : agent));
+  if (btn) btn.classList.add('active');
+  // mobile
+  document.querySelectorAll('.mob-btn').forEach(b => b.classList.remove('active'));
+  const mob = document.getElementById('mob-' + (agent === 'mesa' ? 'mesa' : agent));
+  if (mob) mob.classList.add('active');
+  // header
+  const a = AGENTS[agent];
+  document.getElementById('chatAvatar').textContent = a.avatarText;
+  document.getElementById('chatAvatar').className = 'chat-header-avatar ' + a.avatarClass;
+  document.getElementById('chatName').textContent = a.name;
+  document.getElementById('chatRole').textContent = a.role;
+  renderMessages();
+}
+
+function agentClick(agent) {
+  if (!isPremium) { showPremium(); return; }
+  switchAgent(agent);
+}
+
+// ────────────────────────────────────────────────
+// MESSAGES
+// ────────────────────────────────────────────────
+function renderMessages() {
+  const container = document.getElementById('messages');
+  const msgs = conversationHistory[currentAgent] || [];
+
+  if (currentAgent === 'mesa' && !isPremium) {
+    container.innerHTML = `
+      <div class="mesa-locked">
+        <div class="mesa-locked-icon">⬡</div>
+        <div class="mesa-locked-title">MESA ESTRATÉGICA</div>
+        <div class="mesa-locked-sub">Activá Premium para reunir a todo el equipo en una sola conversación coordinada por NEXUS.</div>
+        <button class="unlock-btn" onclick="showPremium()" style="margin:0">⚡ ACTIVAR PREMIUM</button>
+      </div>`;
+    document.getElementById('inputRow').style.display = 'none';
+    return;
+  }
+  document.getElementById('inputRow').style.display = 'flex';
+
+  if (msgs.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  container.innerHTML = msgs.map(m => {
+    if (m.role === 'user') {
+      return `<div class="msg user">
+        <div class="msg-avatar" style="background:#0d2b06;color:#4ADE29;border:1px solid #2a7d18">Vos</div>
+        <div class="msg-body">
+          <div class="msg-sender">${userName.toUpperCase()}</div>
+          <div class="msg-text">${escHtml(m.content)}</div>
+        </div>
+      </div>`;
+    } else {
+      const a = AGENTS[currentAgent];
+      return `<div class="msg">
+        <div class="msg-avatar ${a.avatarClass}">${a.avatarText}</div>
+        <div class="msg-body">
+          <div class="msg-sender">${a.name}</div>
+          <div class="msg-text ${a.msgClass}">${formatMsg(m.content)}</div>
+        </div>
+      </div>`;
+    }
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+function addAgentMessage(agent, text) {
+  if (!conversationHistory[agent]) conversationHistory[agent] = [];
+  conversationHistory[agent].push({ role: 'assistant', content: text });
+  if (agent === currentAgent) renderMessages();
+  saveUser();
+}
+
+function addUserMessage(text) {
+  if (!conversationHistory[currentAgent]) conversationHistory[currentAgent] = [];
+  conversationHistory[currentAgent].push({ role: 'user', content: text });
+  renderMessages();
+  saveUser();
+}
+
+function showTyping() {
+  const container = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg'; div.id = 'typingMsg';
+  const a = AGENTS[currentAgent];
+  div.innerHTML = `
+    <div class="msg-avatar ${a.avatarClass}">${a.avatarText}</div>
+    <div class="msg-body">
+      <div class="msg-sender">${a.name}</div>
+      <div class="msg-text ${a.msgClass}">
+        <div class="typing"><span></span><span></span><span></span></div>
+      </div>
+    </div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+function hideTyping() {
+  const t = document.getElementById('typingMsg');
+  if (t) t.remove();
+}
+
+// ────────────────────────────────────────────────
+// SEND MESSAGE
+// ────────────────────────────────────────────────
+async function sendMsg() {
+  if (isLoading) return;
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = ''; input.style.height = 'auto';
+  document.getElementById('sendBtn').disabled = true;
+
+  addUserMessage(text);
+  isLoading = true;
+  showTyping();
+
+  const agent = AGENTS[currentAgent];
+  const systemPrompt = agent.prompt(userName, userSit, userObj);
+  const msgs = (conversationHistory[currentAgent] || [])
+    .filter(m => m.role !== undefined)
+    .map(m => ({ role: m.role, content: m.content }));
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: msgs
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'Error al procesar la respuesta.';
+    hideTyping();
+    addAgentMessage(currentAgent, reply);
+  } catch (e) {
+    hideTyping();
+    addAgentMessage(currentAgent, 'Hubo un error de conexión. Revisá tu conexión a internet e intentá de nuevo.');
+  }
+  isLoading = false;
+  document.getElementById('sendBtn').disabled = false;
+}
+
+// ────────────────────────────────────────────────
+// PREMIUM
+// ────────────────────────────────────────────────
+// ── Número de WhatsApp de SR.STILE (con código de país, sin +)
+const WA_NUMBER = '5492645000000'; // ← CAMBIÁ POR TU NÚMERO REAL
+
+function showPremium() {
+  // Armar mensaje pre-escrito con el nombre del usuario
+  const msg = encodeURIComponent(
+    `Hola! Soy ${userName} y estoy usando SYSTEM ONE.\n\nQuiero activar el plan Premium para desbloquear el equipo completo. ¿Me podés dar más info?\n\nGracias! 🙌`
+  );
+  document.getElementById('waUpgradeBtn').href = `https://wa.me/${WA_NUMBER}?text=${msg}`;
+  document.getElementById('premiumModal').style.display = 'flex';
+}
+function hidePremium() { document.getElementById('premiumModal').style.display = 'none'; }
+function activatePremiumDemo() {
+  isPremium = true;
+  hidePremium();
+  applyPremiumState();
+  saveUser();
+}
+function applyPremiumState() {
+  const badge = document.getElementById('planBadge');
+  if (isPremium) {
+    badge.className = 'premium-badge'; badge.textContent = 'PREMIUM';
+    ['prince','mark','mike','mesa'].forEach(a => {
+      const btn = document.getElementById('btn-' + a);
+      if (btn) {
+        btn.classList.remove('locked');
+        btn.onclick = () => switchAgent(a);
+        const lock = btn.querySelector('.lock-icon');
+        if (lock) lock.remove();
+      }
+      const mob = document.getElementById('mob-' + a);
+      if (mob) {
+        mob.classList.remove('locked-mob');
+        const icon = mob.querySelector('.mob-icon');
+        if (icon) icon.style.opacity = '1';
+        mob.onclick = () => switchAgent(a);
+      }
+    });
+  }
+}
+
+// ────────────────────────────────────────────────
+// UTILS
+// ────────────────────────────────────────────────
+function saveUser() {
+  localStorage.setItem('s1_user', JSON.stringify({
+    name: userName, sit: userSit, obj: userObj,
+    premium: isPremium, history: conversationHistory
+  }));
+}
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+function formatMsg(t) {
+  return t
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\n/g,'<br>');
+}
+</script>
+</body>
+</html>

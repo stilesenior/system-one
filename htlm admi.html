@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYSTEM ONE — Torre de Control</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&family=Barlow:wght@300;400;500&display=swap');
+  :root {
+    --black:#060606; --green:#4ADE29; --green-dim:#2a7d18; --green-bg:#0d2b06;
+    --white:#F2F2F2; --gray:#1a1a1a; --gray-mid:#2e2e2e; --gray-light:#444;
+    --red:#ef4444; --red-bg:#2b0606; --yellow:#facc15; --yellow-bg:#2b2206;
+    --blue:#38bdf8; --blue-bg:#0c1e2b;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'Barlow',sans-serif; min-height:100dvh; }
+
+  /* ── LOGIN ── */
+  #loginScreen {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    min-height:100dvh; padding:32px 24px; gap:24px;
+  }
+  .login-logo { font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:4px; color:#555; }
+  .login-title { font-family:'Bebas Neue',sans-serif; font-size:40px; letter-spacing:4px; text-align:center; }
+  .login-title span { color:var(--green); }
+  .login-card {
+    width:100%; max-width:380px; background:var(--gray); border:1px solid var(--gray-mid);
+    border-radius:16px; padding:28px; display:flex; flex-direction:column; gap:16px;
+  }
+  .field-label { font-family:'Barlow Condensed',sans-serif; font-size:11px; letter-spacing:2px; color:#666; text-transform:uppercase; margin-bottom:4px; }
+  .inp {
+    background:var(--black); border:1px solid var(--gray-mid); border-radius:8px;
+    padding:12px 14px; color:var(--white); font-family:'Barlow',sans-serif; font-size:14px;
+    width:100%; outline:none; transition:border-color .2s;
+  }
+  .inp:focus { border-color:var(--green); }
+  .inp::placeholder { color:#444; }
+  .login-btn {
+    background:var(--green); color:var(--black); border:none; border-radius:8px;
+    padding:14px; font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px;
+    cursor:pointer; transition:opacity .2s; margin-top:4px;
+  }
+  .login-btn:hover { opacity:.85; }
+  .login-err { color:var(--red); font-size:13px; text-align:center; display:none; }
+
+  /* ── APP ── */
+  #adminApp { display:none; flex-direction:column; min-height:100dvh; }
+
+  /* topbar */
+  .topbar {
+    position:sticky; top:0; z-index:100;
+    background:var(--black); border-bottom:1px solid var(--gray-mid);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 20px; gap:12px;
+  }
+  .topbar-logo { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:3px; }
+  .topbar-logo span { color:var(--green); }
+  .topbar-sub { font-family:'Barlow Condensed',sans-serif; font-size:11px; letter-spacing:2px; color:#555; text-transform:uppercase; }
+  .logout-btn {
+    background:none; border:1px solid #333; color:#555; padding:6px 12px;
+    border-radius:6px; font-size:12px; cursor:pointer; letter-spacing:1px;
+    font-family:'Barlow Condensed',sans-serif; transition:all .2s;
+  }
+  .logout-btn:hover { border-color:#555; color:#888; }
+
+  /* main */
+  .main { max-width:1100px; margin:0 auto; padding:24px 20px; display:flex; flex-direction:column; gap:24px; }
+
+  /* KPI row */
+  .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+  @media(max-width:700px) { .kpi-row { grid-template-columns:repeat(2,1fr); } }
+  .kpi-card {
+    background:var(--gray); border:1px solid var(--gray-mid); border-radius:12px;
+    padding:16px; display:flex; flex-direction:column; gap:4px;
+  }
+  .kpi-label { font-family:'Barlow Condensed',sans-serif; font-size:11px; letter-spacing:2px; color:#666; text-transform:uppercase; }
+  .kpi-value { font-family:'Bebas Neue',sans-serif; font-size:36px; line-height:1; }
+  .kpi-card.green .kpi-value { color:var(--green); }
+  .kpi-card.yellow .kpi-value { color:var(--yellow); }
+  .kpi-card.red .kpi-value { color:var(--red); }
+  .kpi-card.blue .kpi-value { color:var(--blue); }
+
+  /* section header */
+  .sec-header {
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  }
+  .sec-title { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:2px; }
+  .btn-primary {
+    background:var(--green); color:var(--black); border:none; border-radius:8px;
+    padding:10px 18px; font-family:'Barlow Condensed',sans-serif; font-size:13px;
+    font-weight:700; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:opacity .2s;
+  }
+  .btn-primary:hover { opacity:.85; }
+
+  /* filters */
+  .filter-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .filter-inp {
+    flex:1; min-width:160px; background:var(--gray); border:1px solid var(--gray-mid);
+    border-radius:8px; padding:9px 13px; color:var(--white); font-family:'Barlow',sans-serif;
+    font-size:13px; outline:none; transition:border-color .2s;
+  }
+  .filter-inp:focus { border-color:var(--green-dim); }
+  .filter-inp::placeholder { color:#444; }
+  .pill {
+    background:var(--gray); border:1px solid var(--gray-mid); color:#666;
+    padding:6px 14px; border-radius:20px; font-family:'Barlow Condensed',sans-serif;
+    font-size:12px; letter-spacing:1px; cursor:pointer; transition:all .2s; white-space:nowrap;
+  }
+  .pill.active { background:var(--green-bg); border-color:var(--green-dim); color:var(--green); }
+
+  /* table */
+  .table-wrap { overflow-x:auto; border-radius:12px; border:1px solid var(--gray-mid); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  thead { background:var(--gray); }
+  th {
+    padding:10px 14px; text-align:left; font-family:'Barlow Condensed',sans-serif;
+    font-size:11px; letter-spacing:2px; color:#555; text-transform:uppercase; white-space:nowrap;
+  }
+  tbody tr { border-top:1px solid #1a1a1a; transition:background .15s; }
+  tbody tr:hover { background:#111; }
+  td { padding:12px 14px; vertical-align:middle; }
+  .td-name { font-weight:500; }
+  .td-user { font-family:'Barlow Condensed',sans-serif; font-size:12px; color:#666; letter-spacing:1px; }
+  .td-pass { font-family:'Barlow Condensed',sans-serif; font-size:11px; color:#444; letter-spacing:1px; }
+
+  /* badges */
+  .badge {
+    display:inline-block; padding:3px 9px; border-radius:4px;
+    font-family:'Barlow Condensed',sans-serif; font-size:11px; letter-spacing:1px; text-transform:uppercase;
+  }
+  .badge-premium { background:var(--green-bg); color:var(--green); border:1px solid var(--green-dim); }
+  .badge-free { background:var(--gray); color:#555; border:1px solid #333; }
+  .badge-activo { background:var(--green-bg); color:var(--green); border:1px solid var(--green-dim); }
+  .badge-pausado { background:var(--yellow-bg); color:var(--yellow); border:1px solid #7a5f00; }
+  .badge-inactivo { background:var(--red-bg); color:var(--red); border:1px solid #7a1f1f; }
+
+  /* action buttons */
+  .actions { display:flex; gap:6px; flex-wrap:nowrap; }
+  .act-btn {
+    background:none; border:1px solid var(--gray-mid); border-radius:6px;
+    padding:5px 10px; font-size:11px; cursor:pointer; transition:all .15s;
+    font-family:'Barlow Condensed',sans-serif; letter-spacing:1px; white-space:nowrap;
+  }
+  .act-btn:hover { border-color:#555; }
+  .act-btn.edit { color:#aaa; }
+  .act-btn.premium-on { color:var(--green); border-color:var(--green-dim); }
+  .act-btn.premium-off { color:var(--yellow); border-color:#7a5f00; }
+  .act-btn.pause { color:var(--yellow); }
+  .act-btn.activate { color:var(--green); }
+  .act-btn.del { color:var(--red); }
+  .act-btn.wa { color:var(--blue); }
+  .act-btn.pass { color:#888; }
+
+  /* alerts */
+  .alerts-wrap { display:flex; flex-direction:column; gap:8px; }
+  .alert-item {
+    background:var(--gray); border-radius:10px; padding:12px 16px;
+    display:flex; align-items:center; gap:12px; border-left:3px solid;
+  }
+  .alert-item.warn { border-color:var(--yellow); }
+  .alert-item.danger { border-color:var(--red); }
+  .alert-item.info { border-color:var(--blue); }
+  .alert-icon { font-size:18px; }
+  .alert-text { font-size:13px; color:#bbb; flex:1; }
+  .alert-text strong { color:var(--white); }
+  .no-alerts { font-size:13px; color:#444; padding:12px 0; }
+
+  /* empty state */
+  .empty { text-align:center; padding:48px 24px; color:#444; }
+  .empty-icon { font-size:40px; margin-bottom:12px; opacity:.3; }
+  .empty-text { font-size:14px; }
+
+  /* ── MODAL ── */
+  .modal-bg {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.85);
+    z-index:500; align-items:center; justify-content:center; padding:24px;
+  }
+  .modal-card {
+    background:#0f0f0f; border:1px solid var(--gray-mid); border-radius:16px;
+    padding:28px; max-width:480px; width:100%; display:flex; flex-direction:column; gap:16px;
+    max-height:90dvh; overflow-y:auto;
+  }
+  .modal-title { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:2px; }
+  .modal-title span { color:var(--green); }
+  .field { display:flex; flex-direction:column; gap:4px; }
+  .field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .modal-actions { display:flex; gap:10px; margin-top:4px; }
+  .btn-cancel {
+    flex:1; background:none; border:1px solid var(--gray-mid); color:#666;
+    border-radius:8px; padding:12px; font-family:'Barlow Condensed',sans-serif;
+    font-size:14px; letter-spacing:1px; cursor:pointer; transition:all .2s;
+  }
+  .btn-cancel:hover { border-color:#555; color:#aaa; }
+  .btn-save {
+    flex:2; background:var(--green); color:var(--black); border:none;
+    border-radius:8px; padding:12px; font-family:'Bebas Neue',sans-serif;
+    font-size:18px; letter-spacing:2px; cursor:pointer; transition:opacity .2s;
+  }
+  .btn-save:hover { opacity:.85; }
+  .modal-sep { border:none; border-top:1px solid var(--gray-mid); margin:4px 0; }
+
+  /* pass reveal */
+  .pass-reveal {
+    background:var(--gray); border:1px solid var(--gray-mid); border-radius:8px;
+    padding:12px 16px; font-family:'Barlow Condensed',sans-serif; font-size:16px;
+    letter-spacing:3px; color:var(--green); text-align:center;
+  }
+  .wa-link {
+    display:block; text-align:center; background:var(--blue-bg); border:1px solid #1e5d80;
+    color:var(--blue); border-radius:8px; padding:12px; text-decoration:none;
+    font-family:'Barlow Condensed',sans-serif; font-size:14px; letter-spacing:1px; transition:opacity .2s;
+  }
+  .wa-link:hover { opacity:.8; }
+
+  /* confirm modal */
+  #confirmModal .modal-card { max-width:360px; }
+  .confirm-msg { font-size:14px; color:#bbb; line-height:1.6; }
+  .btn-danger {
+    flex:2; background:var(--red); color:var(--white); border:none;
+    border-radius:8px; padding:12px; font-family:'Bebas Neue',sans-serif;
+    font-size:18px; letter-spacing:2px; cursor:pointer; transition:opacity .2s;
+  }
+  .btn-danger:hover { opacity:.85; }
+
+  select.inp { cursor:pointer; }
+  option { background:#1a1a1a; }
+
+  @media(max-width:600px) {
+    .actions { flex-wrap:wrap; }
+    th:nth-child(4), td:nth-child(4),
+    th:nth-child(5), td:nth-child(5) { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-logo">STILE SERVICE</div>
+  <div class="login-title">TORRE DE<br><span>CONTROL</span></div>
+  <div class="login-card">
+    <div>
+      <div class="field-label">Usuario</div>
+      <input class="inp" id="lUser" placeholder="admin" />
+    </div>
+    <div>
+      <div class="field-label">Contraseña</div>
+      <input class="inp" id="lPass" type="password" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <div class="login-err" id="loginErr">Credenciales incorrectas</div>
+    <button class="login-btn" onclick="doLogin()">INGRESAR →</button>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="adminApp">
+  <div class="topbar">
+    <div>
+      <div class="topbar-logo">SYSTEM<span>ONE</span></div>
+      <div class="topbar-sub">Torre de Control</div>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+  </div>
+
+  <div class="main">
+
+    <!-- KPIs -->
+    <div class="kpi-row" id="kpiRow"></div>
+
+    <!-- ALERTAS -->
+    <div>
+      <div class="sec-header" style="margin-bottom:12px;">
+        <div class="sec-title">⚠ ALERTAS</div>
+      </div>
+      <div class="alerts-wrap" id="alertsWrap"></div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div>
+      <div class="sec-header" style="margin-bottom:14px;">
+        <div class="sec-title">CLIENTES</div>
+        <button class="btn-primary" onclick="openNewClient()">+ NUEVO CLIENTE</button>
+      </div>
+      <div class="filter-row" style="margin-bottom:12px;">
+        <input class="filter-inp" id="searchInp" placeholder="Buscar por nombre o usuario..." oninput="renderTable()" />
+        <span class="pill active" data-f="todos" onclick="setFilter('todos',this)">Todos</span>
+        <span class="pill" data-f="premium" onclick="setFilter('premium',this)">Premium</span>
+        <span class="pill" data-f="free" onclick="setFilter('free',this)">Free</span>
+        <span class="pill" data-f="pausado" onclick="setFilter('pausado',this)">Pausado</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Plan</th>
+              <th>Estado</th>
+              <th>Inicio</th>
+              <th>WhatsApp</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="clientTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL NUEVO/EDITAR CLIENTE -->
+<div class="modal-bg" id="clientModal">
+  <div class="modal-card">
+    <div class="modal-title" id="modalTitle">NUEVO <span>CLIENTE</span></div>
+    <div class="field">
+      <div class="field-label">Nombre completo</div>
+      <input class="inp" id="fNombre" placeholder="Ej: Martín García" />
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <div class="field-label">Usuario (login)</div>
+        <input class="inp" id="fUser" placeholder="martin" />
+      </div>
+      <div class="field">
+        <div class="field-label">Contraseña</div>
+        <input class="inp" id="fPass" placeholder="stile2024" />
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <div class="field-label">Plan</div>
+        <select class="inp" id="fPlan">
+          <option value="free">Free</option>
+          <option value="premium">Premium</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="field-label">Estado</div>
+        <select class="inp" id="fEstado">
+          <option value="activo">Activo</option>
+          <option value="pausado">Pausado</option>
+          <option value="inactivo">Inactivo</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">WhatsApp (con código país)</div>
+      <input class="inp" id="fWA" placeholder="+5492645000000" />
+    </div>
+    <div class="field">
+      <div class="field-label">Fecha de inicio</div>
+      <input class="inp" id="fFecha" type="date" />
+    </div>
+    <div class="field">
+      <div class="field-label">Notas internas</div>
+      <textarea class="inp" id="fNotas" placeholder="Ej: Viene por TikTok, espera Método Punto Cero Emprendedor..." style="resize:none;height:72px;"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeClientModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveClient()">GUARDAR →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VER CONTRASEÑA / WA -->
+<div class="modal-bg" id="accessModal">
+  <div class="modal-card">
+    <div class="modal-title" id="accessTitle">ACCESO <span>CLIENTE</span></div>
+    <div class="field">
+      <div class="field-label">Usuario</div>
+      <div class="pass-reveal" id="accessUser">—</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Contraseña</div>
+      <div class="pass-reveal" id="accessPass">—</div>
+    </div>
+    <hr class="modal-sep"/>
+    <a class="wa-link" id="accessWA" href="#" target="_blank">📲 Enviar credenciales por WhatsApp</a>
+    <button class="btn-cancel" onclick="closeAccessModal()">Cerrar</button>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR ELIMINAR -->
+<div class="modal-bg" id="confirmModal">
+  <div class="modal-card">
+    <div class="modal-title">ELIMINAR <span>CLIENTE</span></div>
+    <div class="confirm-msg" id="confirmMsg">¿Estás seguro? Esta acción no se puede deshacer.</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn-danger" onclick="confirmDelete()">ELIMINAR</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ────────────────────────────────────────────────
+// AUTH
+// ────────────────────────────────────────────────
+const ADMIN_USER = 'srstile';
+const ADMIN_PASS = 'stile.admin.2026';
+
+function doLogin() {
+  const u = document.getElementById('lUser').value.trim();
+  const p = document.getElementById('lPass').value.trim();
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminApp').style.display = 'flex';
+    document.getElementById('adminApp').style.flexDirection = 'column';
+    renderAll();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+function doLogout() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('adminApp').style.display = 'none';
+  document.getElementById('lUser').value = '';
+  document.getElementById('lPass').value = '';
+}
+
+// ────────────────────────────────────────────────
+// DATA — persiste en localStorage
+// ────────────────────────────────────────────────
+function loadClients() {
+  const raw = localStorage.getItem('s1_admin_clients');
+  return raw ? JSON.parse(raw) : [];
+}
+function saveClients(list) {
+  localStorage.setItem('s1_admin_clients', JSON.stringify(list));
+}
+
+// ────────────────────────────────────────────────
+// KPIs
+// ────────────────────────────────────────────────
+function renderKPIs() {
+  const cl = loadClients();
+  const total = cl.length;
+  const premium = cl.filter(c => c.plan === 'premium').length;
+  const activos = cl.filter(c => c.estado === 'activo').length;
+  const pausados = cl.filter(c => c.estado === 'pausado').length;
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi-card green"><div class="kpi-label">Total Clientes</div><div class="kpi-value">${total}</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Premium</div><div class="kpi-value">${premium}</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Activos</div><div class="kpi-value">${activos}</div></div>
+    <div class="kpi-card yellow"><div class="kpi-label">Pausados</div><div class="kpi-value">${pausados}</div></div>`;
+}
+
+// ────────────────────────────────────────────────
+// ALERTAS
+// ────────────────────────────────────────────────
+function renderAlerts() {
+  const cl = loadClients();
+  const now = new Date();
+  let html = '';
+  cl.forEach(c => {
+    if (!c.fecha) return;
+    const inicio = new Date(c.fecha);
+    const dias = Math.floor((now - inicio) / 86400000);
+    if (c.estado === 'activo' && c.plan === 'premium' && dias >= 80 && dias <= 95) {
+      html += alert('warn','⏰',`<strong>${c.nombre}</strong> está llegando al final de sus 90 días (día ${dias}).`);
+    }
+    if (c.estado === 'pausado') {
+      html += alert('danger','🔴',`<strong>${c.nombre}</strong> tiene la cuenta pausada.`);
+    }
+    if (c.plan === 'free' && dias > 14) {
+      html += alert('info','💬',`<strong>${c.nombre}</strong> lleva ${dias} días en plan Free. Oportunidad de convertir a Premium.`);
+    }
+  });
+  document.getElementById('alertsWrap').innerHTML = html ||
+    '<div class="no-alerts">Sin alertas activas. Todo bajo control ✓</div>';
+}
+function alert(type, icon, text) {
+  return `<div class="alert-item ${type}"><div class="alert-icon">${icon}</div><div class="alert-text">${text}</div></div>`;
+}
+
+// ────────────────────────────────────────────────
+// TABLE
+// ────────────────────────────────────────────────
+let currentFilter = 'todos';
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderTable();
+}
+
+function renderTable() {
+  const search = document.getElementById('searchInp').value.toLowerCase();
+  let cl = loadClients();
+  if (currentFilter !== 'todos') cl = cl.filter(c =>
+    currentFilter === 'premium' ? c.plan === 'premium' :
+    currentFilter === 'free' ? c.plan === 'free' :
+    c.estado === currentFilter
+  );
+  if (search) cl = cl.filter(c =>
+    c.nombre.toLowerCase().includes(search) || c.user.toLowerCase().includes(search)
+  );
+  const tbody = document.getElementById('clientTable');
+  if (!cl.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-icon">◻</div><div class="empty-text">Sin resultados</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = cl.map(c => {
+    const planBadge = c.plan === 'premium' ?
+      '<span class="badge badge-premium">PREMIUM</span>' :
+      '<span class="badge badge-free">FREE</span>';
+    const estadoBadge = c.estado === 'activo' ?
+      '<span class="badge badge-activo">ACTIVO</span>' :
+      c.estado === 'pausado' ?
+      '<span class="badge badge-pausado">PAUSADO</span>' :
+      '<span class="badge badge-inactivo">INACTIVO</span>';
+    const fechaStr = c.fecha ? new Date(c.fecha).toLocaleDateString('es-AR') : '—';
+    const waNum = c.wa ? c.wa.replace(/\D/g,'') : '';
+    return `<tr>
+      <td>
+        <div class="td-name">${escHtml(c.nombre)}</div>
+        <div class="td-user">@${escHtml(c.user)}</div>
+        ${c.notas ? `<div class="td-pass" style="color:#555;margin-top:2px;">${escHtml(c.notas.substring(0,60))}${c.notas.length>60?'…':''}</div>` : ''}
+      </td>
+      <td>${planBadge}</td>
+      <td>${estadoBadge}</td>
+      <td style="font-size:12px;color:#666;">${fechaStr}</td>
+      <td style="font-size:12px;color:#666;">${c.wa || '—'}</td>
+      <td>
+        <div class="actions">
+          <button class="act-btn edit" onclick="openEditClient('${c.id}')">✏ Editar</button>
+          <button class="act-btn pass" onclick="showAccess('${c.id}')">🔑 Acceso</button>
+          ${c.plan === 'free' ?
+            `<button class="act-btn premium-on" onclick="togglePremium('${c.id}')">⬆ Premium</button>` :
+            `<button class="act-btn premium-off" onclick="togglePremium('${c.id}')">⬇ Free</button>`}
+          ${c.estado === 'activo' ?
+            `<button class="act-btn pause" onclick="toggleEstado('${c.id}')">⏸ Pausar</button>` :
+            `<button class="act-btn activate" onclick="toggleEstado('${c.id}')">▶ Activar</button>`}
+          <button class="act-btn del" onclick="askDelete('${c.id}')">✕ Eliminar</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ────────────────────────────────────────────────
+// CRUD
+// ────────────────────────────────────────────────
+let editingId = null;
+
+function openNewClient() {
+  editingId = null;
+  document.getElementById('modalTitle').innerHTML = 'NUEVO <span>CLIENTE</span>';
+  clearForm();
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('fFecha').value = today;
+  document.getElementById('clientModal').style.display = 'flex';
+}
+function openEditClient(id) {
+  editingId = id;
+  const c = loadClients().find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('modalTitle').innerHTML = 'EDITAR <span>CLIENTE</span>';
+  document.getElementById('fNombre').value = c.nombre;
+  document.getElementById('fUser').value = c.user;
+  document.getElementById('fPass').value = c.pass;
+  document.getElementById('fPlan').value = c.plan;
+  document.getElementById('fEstado').value = c.estado;
+  document.getElementById('fWA').value = c.wa || '';
+  document.getElementById('fFecha').value = c.fecha || '';
+  document.getElementById('fNotas').value = c.notas || '';
+  document.getElementById('clientModal').style.display = 'flex';
+}
+function clearForm() {
+  ['fNombre','fUser','fPass','fWA','fNotas'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fPlan').value = 'free';
+  document.getElementById('fEstado').value = 'activo';
+  document.getElementById('fFecha').value = '';
+}
+function closeClientModal() { document.getElementById('clientModal').style.display = 'none'; }
+
+function saveClient() {
+  const nombre = document.getElementById('fNombre').value.trim();
+  const user = document.getElementById('fUser').value.trim().toLowerCase();
+  const pass = document.getElementById('fPass').value.trim();
+  if (!nombre || !user || !pass) { alert('Completá nombre, usuario y contraseña.'); return; }
+  const cl = loadClients();
+  if (editingId) {
+    const idx = cl.findIndex(x => x.id === editingId);
+    if (idx !== -1) {
+      cl[idx] = { ...cl[idx],
+        nombre, user, pass,
+        plan: document.getElementById('fPlan').value,
+        estado: document.getElementById('fEstado').value,
+        wa: document.getElementById('fWA').value.trim(),
+        fecha: document.getElementById('fFecha').value,
+        notas: document.getElementById('fNotas').value.trim()
+      };
+    }
+  } else {
+    // check duplicate user
+    if (cl.find(x => x.user === user)) { alert('Ya existe un cliente con ese usuario.'); return; }
+    cl.push({
+      id: 'c' + Date.now(),
+      nombre, user, pass,
+      plan: document.getElementById('fPlan').value,
+      estado: document.getElementById('fEstado').value,
+      wa: document.getElementById('fWA').value.trim(),
+      fecha: document.getElementById('fFecha').value,
+      notas: document.getElementById('fNotas').value.trim(),
+      creadoEn: new Date().toISOString()
+    });
+  }
+  saveClients(cl);
+  closeClientModal();
+  renderAll();
+}
+
+function togglePremium(id) {
+  const cl = loadClients();
+  const c = cl.find(x => x.id === id);
+  if (!c) return;
+  c.plan = c.plan === 'premium' ? 'free' : 'premium';
+  saveClients(cl); renderAll();
+}
+function toggleEstado(id) {
+  const cl = loadClients();
+  const c = cl.find(x => x.id === id);
+  if (!c) return;
+  c.estado = c.estado === 'activo' ? 'pausado' : 'activo';
+  saveClients(cl); renderAll();
+}
+
+// ── DELETE ──
+let deleteTargetId = null;
+function askDelete(id) {
+  deleteTargetId = id;
+  const c = loadClients().find(x => x.id === id);
+  document.getElementById('confirmMsg').innerHTML =
+    `¿Eliminar a <strong>${escHtml(c.nombre)}</strong>? Esta acción no se puede deshacer.`;
+  document.getElementById('confirmModal').style.display = 'flex';
+}
+function closeConfirm() { document.getElementById('confirmModal').style.display = 'none'; deleteTargetId = null; }
+function confirmDelete() {
+  if (!deleteTargetId) return;
+  saveClients(loadClients().filter(x => x.id !== deleteTargetId));
+  closeConfirm(); renderAll();
+}
+
+// ── ACCESO / CONTRASEÑA ──
+function showAccess(id) {
+  const c = loadClients().find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('accessTitle').innerHTML = `ACCESO <span>${escHtml(c.nombre.toUpperCase())}</span>`;
+  document.getElementById('accessUser').textContent = c.user;
+  document.getElementById('accessPass').textContent = c.pass;
+  const waNum = c.wa ? c.wa.replace(/\D/g,'') : '';
+  const msg = encodeURIComponent(
+    `Hola ${c.nombre}! 🙌\nTe comparto tus credenciales de acceso a SYSTEM ONE:\n\n👤 Usuario: ${c.user}\n🔑 Contraseña: ${c.pass}\n\n🔗 Accedé desde: https://stilesenior.github.io/stileservice/\n\nCualquier consulta escribime. ¡Vamos! 💚`
+  );
+  document.getElementById('accessWA').href = waNum ?
+    `https://wa.me/${waNum}?text=${msg}` : '#';
+  document.getElementById('accessModal').style.display = 'flex';
+}
+function closeAccessModal() { document.getElementById('accessModal').style.display = 'none'; }
+
+// ────────────────────────────────────────────────
+// RENDER ALL
+// ────────────────────────────────────────────────
+function renderAll() { renderKPIs(); renderAlerts(); renderTable(); }
+function escHtml(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
