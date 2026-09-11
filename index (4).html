@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYSTEM ONE — STILE SERVICE</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&family=Barlow:wght@300;400;500&display=swap');
+:root{
+  --black:#060606;--green:#4ADE29;--gd:#2a7d18;--white:#F2F2F2;
+  --gray:#1a1a1a;--gm:#2e2e2e;--muted:#555;--red:#ef4444;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--black);color:var(--white);font-family:'Barlow',sans-serif;height:100dvh;overflow:hidden;display:flex;flex-direction:column;}
+
+/* AUTH */
+.auth-screen{position:fixed;inset:0;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;padding:24px;overflow-y:auto;}
+.auth-logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,10vw,72px);letter-spacing:6px;color:var(--white);text-align:center;margin-bottom:4px;}
+.auth-logo span{color:var(--green);}
+.auth-tag{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#444;margin-bottom:24px;text-align:center;}
+.auth-card{width:100%;max-width:400px;background:var(--gray);border:1px solid var(--gm);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:12px;}
+.auth-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;}
+.auth-title span{color:var(--green);}
+.lbl{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.inp{background:var(--black);border:1px solid var(--gm);border-radius:8px;padding:11px 14px;color:var(--white);font-family:'Barlow',sans-serif;font-size:14px;width:100%;outline:none;transition:border-color .2s;}
+.inp:focus{border-color:var(--green);}
+.inp::placeholder{color:#333;}
+.abtn{background:var(--green);color:var(--black);border:none;border-radius:8px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;transition:opacity .2s;margin-top:4px;}
+.abtn:hover{opacity:.85;}
+.abtn:disabled{opacity:.4;cursor:not-allowed;}
+.aswitch{font-size:13px;color:var(--muted);text-align:center;}
+.aswitch a{color:var(--green);cursor:pointer;}
+.aerr{color:var(--red);font-size:13px;text-align:center;display:none;}
+.aok{color:var(--green);font-size:13px;text-align:center;display:none;}
+.afgt{font-size:12px;color:#444;text-align:right;cursor:pointer;}
+.afgt:hover{color:#888;}
+
+/* ONBOARDING */
+#ob{display:none;position:fixed;inset:0;background:var(--black);z-index:997;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;}
+.ob-card{width:100%;max-width:480px;display:flex;flex-direction:column;gap:20px;}
+.ob-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;color:var(--green);}
+.ob-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,7vw,44px);line-height:1.05;}
+.ob-sub{font-size:14px;color:#888;line-height:1.6;}
+.ob-inp{background:var(--gray);border:1px solid var(--gm);border-radius:8px;padding:13px 16px;color:var(--white);font-family:'Barlow',sans-serif;font-size:15px;width:100%;outline:none;transition:border-color .2s;}
+.ob-inp:focus{border-color:var(--green);}
+.ob-inp::placeholder{color:var(--muted);}
+.ob-btn{background:var(--green);color:var(--black);border:none;border-radius:8px;padding:15px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;}
+.ob-back{font-size:12px;color:#444;text-align:center;cursor:pointer;text-decoration:underline;}
+.ob-step{display:none;}
+.ob-step.active{display:flex;flex-direction:column;gap:16px;}
+.sit-opts{display:flex;flex-direction:column;gap:10px;}
+.sit-opt{background:var(--gray);border:1px solid var(--gm);border-radius:10px;padding:16px;cursor:pointer;transition:all .2s;}
+.sit-opt:hover,.sit-opt.sel{border-color:var(--green);background:#0d2b06;}
+.sit-opt-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;}
+.sit-opt-sub{font-size:12px;color:#888;margin-top:3px;}
+
+/* APP */
+#app{display:none;flex-direction:column;height:100dvh;overflow:hidden;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--gm);flex-shrink:0;gap:8px;}
+.topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;flex-shrink:0;}
+.topbar-logo span{color:var(--green);}
+.topbar-r{display:flex;align-items:center;gap:8px;}
+.pbadge{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;padding:3px 8px;border-radius:4px;text-transform:uppercase;cursor:pointer;flex-shrink:0;}
+.pbadge.free{border:1px solid #333;color:var(--muted);}
+.pbadge.plus{background:#1a3a6e;color:#60a5fa;}
+.pbadge.pro{background:var(--green);color:var(--black);}
+.signout-btn{background:none;border:none;color:#333;font-size:11px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:1px;}
+.signout-btn:hover{color:#666;}
+.body-wrap{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:190px;flex-shrink:0;border-right:1px solid var(--gm);display:flex;flex-direction:column;padding:8px 4px;gap:2px;overflow-y:auto;}
+@media(max-width:600px){.sidebar{display:none;}.mob-nav{display:flex!important;}}
+.nav-btn{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border:none;background:transparent;color:#888;width:100%;text-align:left;transition:all .15s;position:relative;border-radius:8px;}
+.nav-btn:hover{background:var(--gray);color:var(--white);}
+.nav-btn.active{background:var(--gray);color:var(--white);}
+.nav-btn.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;border-radius:0 2px 2px 0;background:var(--green);}
+.nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+.nav-txt{display:flex;flex-direction:column;}
+.nav-lbl{font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:1px;font-weight:600;line-height:1;}
+.nav-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+.sidebar-sep{height:1px;background:var(--gm);margin:4px 8px;}
+.msg-counter{font-size:10px;color:var(--muted);padding:6px 12px 2px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;}
+.msg-counter span{color:var(--green);}
+
+/* VIEWS */
+.view{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.view.active{display:flex;}
+
+/* CHAT */
+.chat-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.chat-hdr{padding:12px 16px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.chat-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:15px;background:#0d2b06;color:var(--green);border:1px solid var(--gd);}
+.chat-nm{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:1px;}
+.chat-rl{font-size:11px;color:#666;}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--green);margin-left:auto;box-shadow:0 0 6px var(--green);}
+.messages{flex:1;overflow-y:auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth;}
+.messages::-webkit-scrollbar{width:4px;}
+.messages::-webkit-scrollbar-thumb{background:#333;border-radius:2px;}
+.msg{display:flex;gap:10px;max-width:85%;animation:fi .3s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{align-self:flex-end;flex-direction:row-reverse;}
+.msg-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:12px;flex-shrink:0;background:#0d2b06;color:var(--green);border:1px solid var(--gd);}
+.msg-body{display:flex;flex-direction:column;gap:4px;}
+.msg-sndr{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:1px;color:var(--muted);}
+.msg.user .msg-sndr{text-align:right;}
+.msg-txt{background:var(--gray);border-radius:12px;padding:10px 14px;font-size:14px;line-height:1.55;}
+.msg.user .msg-txt{background:#0d2b06;border:1px solid var(--gd);}
+.msg-txt.nx{border-left:2px solid var(--green);}
+.typing{display:flex;gap:5px;padding:12px 14px;align-items:center;}
+.typing span{width:7px;height:7px;border-radius:50%;background:#444;animation:bl 1.2s infinite;}
+.typing span:nth-child(2){animation-delay:.2s;}
+.typing span:nth-child(3){animation-delay:.4s;}
+@keyframes bl{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.inp-row{padding:12px 16px;border-top:1px solid var(--gm);display:flex;gap:10px;align-items:flex-end;flex-shrink:0;}
+#msgInput{flex:1;background:var(--gray);border:1px solid var(--gm);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Barlow',sans-serif;font-size:14px;resize:none;outline:none;max-height:120px;min-height:44px;line-height:1.4;transition:border-color .2s;}
+#msgInput:focus{border-color:var(--gd);}
+#msgInput::placeholder{color:#444;}
+#sendBtn{width:44px;height:44px;background:var(--green);border:none;border-radius:10px;color:var(--black);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .2s;}
+#sendBtn:hover{opacity:.85;}
+#sendBtn:disabled{opacity:.3;cursor:not-allowed;}
+
+/* PLAN VIEW */
+.plan-view{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:18px;}
+.locked-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px;text-align:center;}
+.locked-icon{font-size:48px;opacity:.3;}
+.locked-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:#444;}
+.locked-sub{font-size:13px;color:var(--muted);max-width:280px;line-height:1.6;}
+.locked-btn{background:var(--green);color:var(--black);border:none;border-radius:8px;padding:12px 24px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;cursor:pointer;}
+.day-block{text-align:center;padding:16px 0;}
+.day-num{font-family:'Bebas Neue',sans-serif;font-size:72px;color:var(--green);letter-spacing:4px;line-height:1;}
+.day-lbl{font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:4px;text-transform:uppercase;color:var(--muted);margin-top:4px;}
+.prog-wrap{background:var(--gray);border-radius:10px;overflow:hidden;height:8px;}
+.prog-bar{height:100%;background:var(--green);border-radius:10px;transition:width .6s;}
+.pcard{background:var(--gray);border:1px solid var(--gm);border-radius:12px;padding:18px;}
+.pcard-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.indicador-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--gm);font-size:13px;}
+.indicador-row:last-child{border-bottom:none;}
+.ind-nombre{color:#bbb;}
+.ind-vals{display:flex;gap:12px;}
+.ind-val{color:var(--muted);font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;}
+.ind-val.meta{color:var(--green);}
+.ck-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gm);}
+.ck-item:last-child{border-bottom:none;}
+.ck-cb{width:18px;height:18px;accent-color:var(--green);cursor:pointer;flex-shrink:0;}
+.ck-txt{flex:1;font-size:14px;color:#bbb;}
+.ck-txt.done{text-decoration:line-through;color:var(--muted);}
+.mot{background:linear-gradient(135deg,#0a2006,#0d2b06);border:1px solid var(--gd);border-radius:12px;padding:16px 20px;font-size:14px;color:#9ccc84;line-height:1.6;font-style:italic;}
+
+/* DOC VIEW */
+.doc-view{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px;}
+.doc-frame{flex:1;min-height:400px;background:var(--gray);border:1px solid var(--gm);border-radius:12px;overflow:hidden;}
+.doc-frame iframe{width:100%;height:100%;min-height:400px;border:none;}
+
+/* PLANES VIEW */
+.planes-view{flex:1;overflow-y:auto;padding:24px;}
+.planes-hdr{text-align:center;margin-bottom:24px;}
+.planes-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,8vw,48px);letter-spacing:4px;}
+.planes-title span{color:var(--green);}
+.planes-sub{font-size:14px;color:#666;margin-top:6px;}
+.planes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;max-width:860px;margin:0 auto;}
+@media(max-width:600px){.planes-grid{grid-template-columns:1fr;}}
+.pln-card{background:var(--gray);border:1px solid var(--gm);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:14px;position:relative;}
+.pln-card.pro{border-color:var(--green);}
+.pln-badge-tag{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--green);color:var(--black);font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;padding:3px 12px;border-radius:20px;white-space:nowrap;}
+.pln-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;}
+.pln-price{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--green);letter-spacing:2px;line-height:1;}
+.pln-price span{font-size:13px;color:#666;letter-spacing:1px;}
+.pln-for{font-size:12px;color:#666;line-height:1.5;}
+.pln-sep{height:1px;background:var(--gm);}
+.pln-feats{display:flex;flex-direction:column;gap:7px;}
+.pln-feat{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#bbb;line-height:1.4;}
+.pln-feat.yes .fi{color:var(--green);}
+.pln-feat.no .fi,.pln-feat.no{color:#444;}
+.fi{flex-shrink:0;margin-top:1px;}
+.pln-btn{border:none;border-radius:10px;padding:13px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;cursor:pointer;transition:opacity .2s;margin-top:auto;}
+.pln-btn.cur{background:var(--gm);color:var(--muted);cursor:default;}
+.pln-btn.pri{background:var(--green);color:var(--black);}
+.pln-btn.pri:hover{opacity:.85;}
+.pln-btn.sec{background:transparent;border:1px solid var(--gd);color:var(--green);}
+.pln-btn.sec:hover{background:#0d2b06;}
+
+/* MOBILE NAV */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#0d0d0d;border-top:1px solid var(--gm);padding:6px 0 max(6px,env(safe-area-inset-bottom));z-index:100;justify-content:space-around;}
+.mob-btn{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--muted);cursor:pointer;padding:4px 6px;flex:1;transition:color .15s;}
+.mob-btn.active{color:var(--green);}
+.mob-ic{font-size:18px;}
+.mob-lbl{font-family:'Barlow Condensed',sans-serif;font-size:8px;letter-spacing:1px;text-transform:uppercase;}
+
+@media(max-width:600px){
+  .messages,.plan-view,.doc-view,.planes-view{padding-bottom:72px;}
+  .inp-row{margin-bottom:52px;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="auth-screen" id="loginScreen">
+  <div class="auth-logo">SYSTEM<span>ONE</span></div>
+  <div class="auth-tag">Stile Service — Plataforma de acompañamiento</div>
+  <div class="auth-card">
+    <div class="auth-title">INICIAR <span>SESIÓN</span></div>
+    <div><div class="lbl">Email</div><input class="inp" id="liEmail" type="email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <div><div class="lbl">Contraseña</div><input class="inp" id="liPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <div class="afgt" onclick="showForgot()">¿Olvidaste tu contraseña?</div>
+    <div class="aerr" id="liErr"></div>
+    <button class="abtn" id="liBtn" onclick="doLogin()">INGRESAR →</button>
+    <div class="aswitch">¿No tenés cuenta? <a onclick="showReg()">Registrate acá</a></div>
+  </div>
+</div>
+
+<!-- REGISTER -->
+<div class="auth-screen" id="regScreen" style="display:none;">
+  <div class="auth-logo">SYSTEM<span>ONE</span></div>
+  <div class="auth-tag">Creá tu cuenta gratuita</div>
+  <div class="auth-card">
+    <div class="auth-title">CREAR <span>CUENTA</span></div>
+    <div><div class="lbl">Tu nombre completo</div><input class="inp" id="rgName" placeholder="Ej: Martín García" maxlength="60"/></div>
+    <div><div class="lbl">Email</div><input class="inp" id="rgEmail" type="email" placeholder="tu@email.com"/></div>
+    <div><div class="lbl">Contraseña</div><input class="inp" id="rgPass" type="password" placeholder="Mínimo 6 caracteres" onkeydown="if(event.key==='Enter')doReg()"/></div>
+    <div class="aerr" id="rgErr"></div>
+    <button class="abtn" id="rgBtn" onclick="doReg()">CREAR CUENTA →</button>
+    <div class="aswitch">¿Ya tenés cuenta? <a onclick="showLogin()">Iniciá sesión</a></div>
+  </div>
+</div>
+
+<!-- CONFIRM EMAIL -->
+<div class="auth-screen" id="confirmScreen" style="display:none;">
+  <div class="auth-card" style="max-width:440px;gap:18px;text-align:center;">
+    <div style="font-size:48px;">📬</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;">REVISÁ TU <span style="color:var(--green)">EMAIL</span></div>
+    <div style="font-size:13px;color:#888;line-height:1.6;">Te enviamos un link a <span id="confEmail" style="color:var(--green)"></span>.<br>Confirmá tu cuenta y volvé acá.</div>
+    <button class="abtn" onclick="showLogin()">YA CONFIRMÉ — INGRESAR</button>
+  </div>
+</div>
+
+<!-- FORGOT -->
+<div class="auth-screen" id="forgotScreen" style="display:none;">
+  <div class="auth-logo">SYSTEM<span>ONE</span></div>
+  <div class="auth-card">
+    <div class="auth-title">RECUPERAR <span>CONTRASEÑA</span></div>
+    <div><div class="lbl">Email</div><input class="inp" id="fgEmail" type="email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')doForgot()"/></div>
+    <div class="aerr" id="fgErr"></div>
+    <div class="aok" id="fgOk"></div>
+    <button class="abtn" id="fgBtn" onclick="doForgot()">ENVIAR LINK →</button>
+    <div class="aswitch"><a onclick="showLogin()">← Volver</a></div>
+  </div>
+</div>
+
+<!-- ONBOARDING -->
+<div id="ob">
+  <div class="ob-card">
+    <div class="ob-step active" id="ob1">
+      <div class="ob-logo">SYSTEM ONE</div>
+      <div class="ob-title">¿Cuál es tu situación hoy?</div>
+      <div class="ob-sub">Esto define cómo NEXUS te va a acompañar.</div>
+      <div class="sit-opts">
+        <div class="sit-opt" id="sit-a" onclick="selectSit('empezar')">
+          <div class="sit-opt-title">Quiero empezar un negocio</div>
+          <div class="sit-opt-sub">Todavía no tengo nada y quiero arrancar desde cero</div>
+        </div>
+        <div class="sit-opt" id="sit-b" onclick="selectSit('potenciar')">
+          <div class="sit-opt-title">Tengo un negocio y quiero potenciarlo</div>
+          <div class="sit-opt-sub">Ya estoy operando y necesito crecer o mejorar</div>
+        </div>
+      </div>
+      <button class="ob-btn" id="ob1Btn" onclick="goOb2()" style="display:none">CONTINUAR →</button>
+    </div>
+    <div class="ob-step" id="ob2">
+      <div class="ob-logo">SYSTEM ONE</div>
+      <div class="ob-title">¿Cuál es tu objetivo en los próximos 90 días?</div>
+      <div class="ob-sub">Una sola frase, con número si podés.</div>
+      <textarea class="ob-inp" id="obObj" placeholder="Ej: Conseguir mis primeros 5 clientes pagos..." style="resize:none;height:80px;"></textarea>
+      <button class="ob-btn" onclick="finishOb()">INGRESAR AL SISTEMA →</button>
+      <div class="ob-back" onclick="goOb1()">← Volver</div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">SYSTEM<span>ONE</span></div>
+    <div class="topbar-r">
+      <div id="pbadge" class="pbadge free" onclick="switchView('planes')">FREE</div>
+      <button class="signout-btn" onclick="doSignOut()">Salir</button>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <div class="sidebar">
+      <button class="nav-btn active" id="nav-chat" onclick="switchView('chat')">
+        <span class="nav-icon">💬</span>
+        <div class="nav-txt"><div class="nav-lbl">NEXUS</div><div class="nav-sub">Tu coordinador</div></div>
+      </button>
+      <button class="nav-btn" id="nav-plan" onclick="switchView('plan')">
+        <span class="nav-icon">📋</span>
+        <div class="nav-txt"><div class="nav-lbl">MI PLAN</div><div class="nav-sub">Día X de 90</div></div>
+      </button>
+      <button class="nav-btn" id="nav-doc" onclick="switchView('doc')">
+        <span class="nav-icon">📄</span>
+        <div class="nav-txt"><div class="nav-lbl">MI DOCUMENTO</div><div class="nav-sub">Método Punto Cero</div></div>
+      </button>
+      <div class="sidebar-sep"></div>
+      <button class="nav-btn" id="nav-planes" onclick="switchView('planes')">
+        <span class="nav-icon">⚡</span>
+        <div class="nav-txt"><div class="nav-lbl">PLANES</div><div class="nav-sub">Ver opciones</div></div>
+      </button>
+      <div class="msg-counter" id="msgCounter" style="display:none"></div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="view active" id="view-chat">
+      <div class="chat-wrap">
+        <div class="chat-hdr">
+          <div class="chat-av">NX</div>
+          <div><div class="chat-nm">NEXUS</div><div class="chat-rl">Coordinador General — STILE SERVICE</div></div>
+          <div class="sdot"></div>
+        </div>
+        <div class="messages" id="messages"></div>
+        <div class="inp-row">
+          <textarea id="msgInput" placeholder="Contale a NEXUS en qué estás..." rows="1"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
+            oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+          <button id="sendBtn" onclick="sendMsg()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MI PLAN -->
+    <div class="view" id="view-plan">
+      <div id="planContent" style="flex:1;overflow-y:auto;"></div>
+    </div>
+
+    <!-- MI DOCUMENTO -->
+    <div class="view" id="view-doc">
+      <div id="docContent" style="flex:1;overflow-y:auto;"></div>
+    </div>
+
+    <!-- PLANES -->
+    <div class="view" id="view-planes">
+      <div class="planes-view">
+        <div class="planes-hdr">
+          <div class="planes-title">ELEGÍ TU <span>PLAN</span></div>
+          <div class="planes-sub">Todos los planes incluyen NEXUS 24/7 y la comunidad PuntoZero.</div>
+        </div>
+        <div class="planes-grid">
+          <div class="pln-card">
+            <div class="pln-name">FREE</div>
+            <div class="pln-price">$0 <span>/ mes</span></div>
+            <div class="pln-for">Para empezar a ordenar tu situación</div>
+            <div class="pln-sep"></div>
+            <div class="pln-feats">
+              <div class="pln-feat yes"><span class="fi">✓</span>Chat con NEXUS (10 mensajes/día)</div>
+              <div class="pln-feat yes"><span class="fi">✓</span>Pre-diagnóstico de tu situación</div>
+              <div class="pln-feat yes"><span class="fi">✓</span>Comunidad PuntoZero</div>
+              <div class="pln-feat yes"><span class="fi">✓</span>Capacitaciones semanales gratuitas</div>
+              <div class="pln-feat no"><span class="fi">✕</span>Método Punto Cero (plan 90 días)</div>
+              <div class="pln-feat no"><span class="fi">✕</span>Seguimiento personalizado</div>
+            </div>
+            <button class="pln-btn cur" id="btnFree">PLAN ACTUAL</button>
+          </div>
+          <div class="pln-card">
+            <div class="pln-name">PLUS</div>
+            <div class="pln-price">$20 <span>USD / mes</span></div>
+            <div class="pln-for">Para ejecutar tu plan con acompañamiento</div>
+            <div class="pln-sep"></div>
+            <div class="pln-feats">
+              <div class="pln-feat yes"><span class="fi">✓</span>Todo lo del plan Free</div>
+              <div class="pln-feat yes"><span class="fi">✓</span>Chat con NEXUS sin límite</div>
+              <div class="pln-feat yes"><span class="fi">✓</span>Entrevista de diagnóstico con el equipo</div>
+              <div class="pln-feat yes"><span class="fi">✓</span>Método Punto Cero: plan 90 días</div>
+              <div class="pln-feat yes"><span class="fi">✓</span>Dashboard de seguimiento diario</div>
+              <div class="pln-feat yes"><span class="fi">✓</span>Revisión mensual de tu caso</div>
+              <div class="pln-feat no"><span class="fi">✕</span>Revisión semanal</div>
+            </div>
+            <button class="pln-btn sec" id="btnPlus" onclick="selectPlan('Plus','20')">CONTRATAR PLUS</button>
+          </div>
+          <div class="pln-card pro">
+            <div class="pln-badge-tag">⚡ CUPOS LIMITADOS</div>
+            <div class="pln-name">PRO</div>
+            <div class="pln-price">$100 <span>USD / mes</span></div>
+            <div class="pln-for">Para negocios que necesitan dirección constante</div>
+            <div class="pln-sep"></div>
+            <div class="pln-feats">
+              <div class="pln-feat yes"><span class="fi">✓</span>Todo lo del plan Plus</div>
+              <div class="pln-feat yes"><span class="fi">✓</span>Método Punto Cero en profundidad</div>
+              <div class="pln-feat yes"><span class="fi">✓</span><strong>Revisión semanal todos los lunes</strong></div>
+              <div class="pln-feat yes"><span class="fi">✓</span>Ajustes continuos del plan</div>
+              <div class="pln-feat yes"><span class="fi">✓</span>Prioridad de respuesta</div>
+            </div>
+            <button class="pln-btn pri" id="btnPro" onclick="selectPlan('Pro','100')">CONTRATAR PRO</button>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:16px;font-size:11px;color:#444;letter-spacing:1px;">Los planes pago se activan por WhatsApp. Respondemos en menos de 24hs.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mob-nav">
+    <button class="mob-btn active" id="mob-chat" onclick="switchView('chat')"><div class="mob-ic">💬</div><div class="mob-lbl">Nexus</div></button>
+    <button class="mob-btn" id="mob-plan" onclick="switchView('plan')"><div class="mob-ic">📋</div><div class="mob-lbl">Mi Plan</div></button>
+    <button class="mob-btn" id="mob-doc" onclick="switchView('doc')"><div class="mob-ic">📄</div><div class="mob-lbl">Documento</div></button>
+    <button class="mob-btn" id="mob-planes" onclick="switchView('planes')"><div class="mob-ic">⚡</div><div class="mob-lbl">Planes</div></button>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ─────────────────────────────────────
+const SB_URL='https://uyujekukxtpcmwihugfs.supabase.co';
+const SB_KEY='sb_publishable_sKFFRjTjsu9vuMjfF7uJBg_VZ2IcNvO';
+const PROXY='https://uyujekukxtpcmwihugfs.supabase.co/functions/v1/cloude-proxi';
+const WA='5492612473378';
+const FREE_LIMIT=10;
+
+const sb=supabase.createClient(SB_URL,SB_KEY);
+
+// ── STATE ──────────────────────────────────────
+let user=null;
+let U={NOMBRE:'',EMAIL:'',PLAN:'Free',SITUACION:'',OBJETIVO:'',METODO_PUNTO_CERO:null,FECHA_PAGO:null,TAREAS_COMPLETADAS:[],MENSAJES_HOY:0,FECHA_CONTADOR:null};
+let historial=[];
+let isLoading=false;
+let isDiag=false;
+let sitSel='';
+
+const MOTIVACIONAL=[
+  "Cada acción que tomás hoy te separa de donde estabas ayer.",
+  "El plan existe. Ahora el único trabajo es ejecutar.",
+  "No estás solo en esto. El equipo está acá con vos.",
+  "Los resultados no mienten. Revisá el progreso y ajustá lo que sea.",
+  "El éxito es la suma de decisiones que tomás hoy, no mañana."
+];
+
+// ── AUTH ───────────────────────────────────────
+function showLogin(){sh('loginScreen');['regScreen','confirmScreen','forgotScreen'].forEach(hide);}
+function showReg(){sh('regScreen');['loginScreen','confirmScreen','forgotScreen'].forEach(hide);}
+function showForgot(){sh('forgotScreen');['loginScreen','regScreen','confirmScreen'].forEach(hide);}
+function sh(id){document.getElementById(id).style.display='flex';}
+function hide(id){document.getElementById(id).style.display='none';}
+
+async function doLogin(){
+  const email=document.getElementById('liEmail').value.trim();
+  const pass=document.getElementById('liPass').value;
+  const err=document.getElementById('liErr');
+  const btn=document.getElementById('liBtn');
+  if(!email||!pass){err.textContent='Completá email y contraseña.';err.style.display='block';return;}
+  btn.disabled=true;btn.textContent='Ingresando...';
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  btn.disabled=false;btn.textContent='INGRESAR →';
+  if(error){err.textContent=error.message.includes('Invalid')?'Email o contraseña incorrectos.':error.message;err.style.display='block';return;}
+  user=data.user;await loadProfile();
+}
+
+async function doReg(){
+  const name=document.getElementById('rgName').value.trim();
+  const email=document.getElementById('rgEmail').value.trim();
+  const pass=document.getElementById('rgPass').value;
+  const err=document.getElementById('rgErr');
+  const btn=document.getElementById('rgBtn');
+  if(!name||!email||!pass){err.textContent='Completá todos los campos.';err.style.display='block';return;}
+  if(pass.length<6){err.textContent='La contraseña debe tener al menos 6 caracteres.';err.style.display='block';return;}
+  btn.disabled=true;btn.textContent='Creando cuenta...';
+  const{data,error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name}}});
+  btn.disabled=false;btn.textContent='CREAR CUENTA →';
+  if(error){err.textContent=error.message;err.style.display='block';return;}
+  document.getElementById('confEmail').textContent=email;
+  hide('regScreen');sh('confirmScreen');
+}
+
+async function doForgot(){
+  const email=document.getElementById('fgEmail').value.trim();
+  const err=document.getElementById('fgErr');
+  const ok=document.getElementById('fgOk');
+  const btn=document.getElementById('fgBtn');
+  if(!email){err.textContent='Ingresá tu email.';err.style.display='block';return;}
+  btn.disabled=true;btn.textContent='Enviando...';
+  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:'https://stilesenior.github.io/system-one/'});
+  btn.disabled=false;btn.textContent='ENVIAR LINK →';
+  if(error){err.textContent=error.message;err.style.display='block';return;}
+  err.style.display='none';ok.textContent='✓ Link enviado. Revisá tu email.';ok.style.display='block';
+}
+
+async function doSignOut(){
+  await sb.auth.signOut();user=null;historial=[];
+  hide('app');showLogin();
+}
+
+// ── LOAD ───────────────────────────────────────
+window.addEventListener('load',async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(session){user=session.user;await loadProfile();}
+  else showLogin();
+});
+
+async function loadProfile(){
+  const{data}=await sb.from('USERS').select('*').eq('ID',user.id).single();
+  if(data){
+    U={...U,...data};
+    historial=Array.isArray(data.HISTORIAL_CHAT)?data.HISTORIAL_CHAT:[];
+    checkDayReset();
+    hideAllAuth();
+    await sb.from('USERS').update({ULTIMO_ACCESO:new Date().toISOString()}).eq('ID',user.id);
+    launchApp(false);
+  } else {
+    U.NOMBRE=user.user_metadata?.full_name||user.email.split('@')[0];
+    U.EMAIL=user.email;
+    hideAllAuth();
+    document.getElementById('ob').style.display='flex';
+  }
+}
+
+function hideAllAuth(){
+  ['loginScreen','regScreen','confirmScreen','forgotScreen'].forEach(hide);
+}
+
+// ── ONBOARDING ─────────────────────────────────
+function selectSit(val){
+  sitSel=val;
+  document.querySelectorAll('.sit-opt').forEach(o=>o.classList.remove('sel'));
+  document.getElementById(val==='empezar'?'sit-a':'sit-b').classList.add('sel');
+  document.getElementById('ob1Btn').style.display='block';
+}
+function goOb1(){document.getElementById('ob2').classList.remove('active');document.getElementById('ob1').classList.add('active');}
+function goOb2(){if(!sitSel)return;document.getElementById('ob1').classList.remove('active');document.getElementById('ob2').classList.add('active');}
+async function finishOb(){
+  const obj=document.getElementById('obObj').value.trim();
+  if(!obj){document.getElementById('obObj').focus();return;}
+  U.SITUACION=sitSel;U.OBJETIVO=obj;
+  await sb.from('USERS').upsert({
+    ID:user.id,NOMBRE:U.NOMBRE,EMAIL:U.EMAIL,
+    SITUACION:sitSel,OBJETIVO:obj,PLAN:'Free',
+    MENSAJES_HOY:0,FECHA_CONTADOR:new Date().toISOString().split('T')[0],
+    ULTIMO_ACCESO:new Date().toISOString(),TAREAS_COMPLETADAS:[],
+    HISTORIAL_CHAT:[]
+  });
+  document.getElementById('ob').style.display='none';
+  launchApp(true);
+}
+
+// ── LAUNCH ─────────────────────────────────────
+function launchApp(isNew){
+  ['loginScreen','regScreen','confirmScreen','forgotScreen'].forEach(hide);
+  document.getElementById('ob').style.display='none';
+  sh('app');
+  updateBadge();updateCounter();
+  renderMessages();renderPlan();renderDoc();renderPlanes();
+  if(isNew){
+    const intro=buildIntro();
+    addMsg('assistant',intro);
+    saveProfile();
+  }
+}
+
+function buildIntro(){
+  const mp=U.METODO_PUNTO_CERO;
+  const day=getDay();
+  if(mp&&day){
+    const b=getBloque(day);
+    const tareaHoy=b?.tareas_diarias?.[0]||'tu tarea del día';
+    return `${U.NOMBRE}, estás en el día ${day} de 90. Hoy te toca ${tareaHoy}. ¿Arrancamos?`;
+  }
+  const sitTxt=U.SITUACION==='empezar'?'querés arrancar un negocio desde cero':'tenés un negocio y querés potenciarlo';
+  return `Hola ${U.NOMBRE}, soy NEXUS — el Coordinador General de tu equipo en STILE SERVICE.\n\nEntiendo que ${sitTxt}. Tu objetivo: "${U.OBJETIVO}".\n\n¿Me contás un poco más de tu situación para poder acompañarte mejor?`;
+}
+
+// ── VIEW SWITCHING ─────────────────────────────
+function switchView(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
+  const nb=document.getElementById('nav-'+v);if(nb)nb.classList.add('active');
+  document.querySelectorAll('.mob-btn').forEach(el=>el.classList.remove('active'));
+  const mb=document.getElementById('mob-'+v);if(mb)mb.classList.add('active');
+  if(v==='plan')renderPlan();
+  if(v==='doc')renderDoc();
+  if(v==='planes')renderPlanes();
+}
+
+// ── MESSAGES ───────────────────────────────────
+function renderMessages(){
+  const c=document.getElementById('messages');
+  if(!historial.length){c.innerHTML='';return;}
+  c.innerHTML=historial.map(m=>{
+    if(m.role==='user')return`<div class="msg user"><div class="msg-av" style="background:#0d2b06;color:#4ADE29;border:1px solid #2a7d18">Vos</div><div class="msg-body"><div class="msg-sndr">${escH(U.NOMBRE).toUpperCase()}</div><div class="msg-txt">${escH(m.content)}</div></div></div>`;
+    return`<div class="msg"><div class="msg-av">NX</div><div class="msg-body"><div class="msg-sndr">NEXUS</div><div class="msg-txt nx">${fmtMsg(m.content)}</div></div></div>`;
+  }).join('');
+  c.scrollTop=c.scrollHeight;
+}
+function addMsg(role,text){
+  historial.push({role,content:text});
+  renderMessages();
+}
+function showTyping(){
+  const c=document.getElementById('messages');
+  const d=document.createElement('div');d.className='msg';d.id='typingMsg';
+  d.innerHTML=`<div class="msg-av">NX</div><div class="msg-body"><div class="msg-sndr">NEXUS</div><div class="msg-txt nx"><div class="typing"><span></span><span></span><span></span></div></div></div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function hideTyping(){const t=document.getElementById('typingMsg');if(t)t.remove();}
+
+// ── SEND ───────────────────────────────────────
+async function sendMsg(){
+  if(isLoading)return;
+  const input=document.getElementById('msgInput');
+  const text=input.value.trim();if(!text)return;
+
+  // Límite Free — excepción: pre-diagnóstico e informe
+  if(U.PLAN==='Free'&&!isDiag){
+    const used=U.MENSAJES_HOY||0;
+    if(used>=FREE_LIMIT){
+      addMsg('assistant',`Llegaste a tus ${FREE_LIMIT} mensajes de hoy. Se renuevan mañana a las 00:00.\n\nSi necesitás acompañamiento sin límite y un plan de 90 días para tu caso, mirá los planes.`);
+      setTimeout(()=>switchView('planes'),2000);
+      return;
+    }
+    U.MENSAJES_HOY=(U.MENSAJES_HOY||0)+1;
+    updateCounter();
+  }
+
+  input.value='';input.style.height='auto';
+  document.getElementById('sendBtn').disabled=true;
+  addMsg('user',text);
+  isLoading=true;showTyping();
+
+  const MODELO=U.PLAN==='Free'?'claude-haiku-4-5':'claude-sonnet-4-6';
+  const msgs=historial.filter(m=>m.role).map(m=>({role:m.role,content:m.content})).slice(-6);
+  const sysPrpt=buildPrompt();
+
+  try{
+    const res=await fetch(PROXY,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:MODELO,
+        max_tokens:1000,
+        system:[{type:'text',text:sysPrpt,cache_control:{type:'ephemeral'}}],
+        messages:msgs
+      })
+    });
+    const data=await res.json();
+    const reply=data.content?.[0]?.text||'Error al procesar la respuesta.';
+    hideTyping();addMsg('assistant',reply);
+    await saveProfile();
+  }catch(e){
+    hideTyping();addMsg('assistant','Hubo un error de conexión. Revisá tu internet e intentá de nuevo.');
+  }
+  isLoading=false;document.getElementById('sendBtn').disabled=false;
+}
+
+// ── PROMPTS ────────────────────────────────────
+function buildPrompt(){
+  const mp=U.METODO_PUNTO_CERO;
+  const day=getDay();
+  const plan=U.PLAN;
+
+  // Base siempre presente
+  const BASE=`Sos NEXUS, el Coordinador General del equipo de STILE SERVICE, una consultora de negocios con inteligencia artificial integrada, fundada por Germán en San Juan, Argentina.
+
+Hablás en español argentino, de forma directa, cercana y sin vueltas. No sos un chatbot genérico ni un asistente motivacional. Sos el punto de contacto principal de un equipo de consultores especializados.
+
+Tu función es acompañar al usuario en la EJECUCIÓN, no darle teoría. Cada respuesta tuya tiene que dejarlo con algo concreto para hacer.
+
+DATOS DEL USUARIO:
+Nombre: ${U.NOMBRE}
+Situación: ${U.SITUACION==='empezar'?'quiere arrancar un negocio desde cero':'tiene un negocio y quiere potenciarlo'}
+Objetivo declarado: "${U.OBJETIVO}"`;
+
+  // Parte 1 — Qué es el Método Punto Cero
+  const PARTE1=`
+
+════════ EL MÉTODO PUNTO CERO ════════
+
+El Método Punto Cero es la metodología de trabajo de STILE SERVICE. Todo tu acompañamiento se apoya en ella.
+
+Es un plan de acción de 90 días construido a medida, que parte de un diagnóstico honesto de la situación real del cliente y lo lleva a un objetivo medible. Se llama "Punto Cero" porque arranca donde el cliente está parado hoy —sin maquillar, sin suponer recursos que no tiene— y desde ahí construye.
+
+LAS 5 FASES:
+1. DIAGNÓSTICO — situación actual, recursos, cuello de botella (el problema raíz que al resolverse destraba todo lo demás)
+2. OBJETIVOS — objetivo principal medible a 90 días, siempre con número
+3. PLAN DE ACCIÓN — 3 bloques de 30 días (Ordenar → Construir → Escalar), con tareas diarias, semanales y un hito por bloque
+4. ACOMPAÑAMIENTO — seguimiento humano + NEXUS disponible todos los días
+5. MEDICIÓN — indicadores concretos y puntos de control en los días 30, 60 y 90
+
+FILOSOFÍA: el día 90 no es el final. Es el cierre de un ciclo y el comienzo del siguiente. Un negocio que mejora nunca termina de mejorar. El cliente no está haciendo "un curso de 90 días": está adoptando una forma de trabajar.
+
+POR QUÉ 90 DÍAS: es el plazo mínimo para que un cambio se sostenga y el máximo antes de que el cliente pierda el foco.`;
+
+  // Parte 2 — Protocolo de comunicación
+  const PARTE2=`
+
+════════ PROTOCOLO DE COMUNICACIÓN ════════
+
+APERTURA:
+Si el cliente tiene plan activo: "Nombre, estás en el día X de 90. Hoy te toca [tarea]. ¿Arrancamos?"
+Si no tiene plan: preguntá por su situación concreta, nunca con un saludo genérico.
+
+ESTRUCTURA DE TODA RESPUESTA:
+1. Respondés lo que se preguntó, directo, sin rodeos
+2. Lo conectás con su objetivo o con la tarea que corresponde
+3. Cerrás con UNA acción concreta o UNA pregunta
+
+Máximo 2 a 4 párrafos. Nunca listas de diez puntos cuando alcanzan tres. Nunca repetís lo que el cliente acaba de decirte.
+
+TU EQUIPO — coordinás a cuatro especialistas según el tema:
+· DRAPER — Ventas, negociación, conseguir clientes, precios
+· PRINCE — Marca, contenido, comunicación, redes
+· MARK — Números, KPIs, organización, procesos
+· MIKE — Producto, servicios, validación, implementación
+
+Lo anunciás naturalmente: "Esto lo veo con DRAPER y te traigo la respuesta." Solo cuando el tema pertenece claramente a un área.
+
+TONO: español argentino, directo, cercano, de vos. No motivacional ni con frases hechas. No prometés resultados. Sos el socio que le dice la verdad.`;
+
+  // Parte 4 — Bases del acompañamiento
+  const PARTE4=`
+
+════════ BASES DEL ACOMPAÑAMIENTO ════════
+
+1. EJECUCIÓN SOBRE TEORÍA — nunca expliques un concepto sin bajarlo a una acción concreta que el cliente pueda hacer hoy.
+2. UNA COSA POR VEZ — el cliente que tiene diez prioridades no tiene ninguna. Siempre señalá cuál es LA tarea del momento.
+3. HONESTIDAD ANTES QUE COMODIDAD — si lo que propone no va a funcionar, decíselo. Si viene atrasado, señalalo. No estás para hacerlo sentir bien: estás para que llegue al objetivo.
+4. NUNCA PLANIFICAR SOBRE RECURSOS QUE NO EXISTEN — todo tiene que poder hacerse con lo que el cliente tiene hoy.
+5. MEDIR SIEMPRE — cuando cuente un avance, pedí el número. "Me fue bien" no es un dato.
+
+SEGÚN LA SITUACIÓN:
+· SI NO AVANZA: buscá el bloqueo real. "Hace días que no movés esta tarea. ¿Qué está trabando? ¿Falta de tiempo, no sabés cómo encararlo, o algo del plan no te cierra?"
+· SI SE FRUSTRA: reconocé la dificultad sin dramatizar y bajá el próximo paso al mínimo posible.
+· SI VIENE ADELANTADO: no lo frenes. Adelantá tareas del bloque siguiente.
+· SI PIDE ALGO QUE EXCEDE UN CHAT: análisis financiero profundo, proyecciones, estrategia completa. Decile que lo lleve a la revisión.
+
+DERIVACIÓN A HUMANO — cuando detectés alguno de estos casos:
+· Deudas graves, problemas legales o impositivos
+· Conflictos entre socios o familiares
+· Crisis emocional o desesperación real
+· Cualquier caso donde la decisión sea demasiado grande para un chat
+
+Decilo así: "Tu caso necesita que lo vea una persona del equipo, no lo puedo resolver acá. Te derivo con un asesor de STILE SERVICE." Contacto: wa.me/${WA}
+
+Si detectás angustia real, bajá el tono comercial por completo. Primero la persona, después el negocio.
+
+LO QUE NUNCA HACÉS:
+· Prometer resultados económicos garantizados
+· Dar consejos legales, impositivos o de inversión específicos
+· Decirle al cliente que abandone su plan por iniciativa propia
+· Inventar datos o números que no te dio el cliente
+· Seguir al cliente en una distracción solo porque insiste
+
+CUÁNDO MENCIONÁS LOS PLANES (solo en estos tres momentos):
+1. Al cerrar el pre-diagnóstico: ofrecé el Método Punto Cero UNA vez. Si dice que no, no insistas.
+2. Si pide algo que excede un chat: "Eso ya es trabajo de consultoría. Es exactamente lo que hace el Método Punto Cero."
+3. Si vuelve con el mismo problema por tercera vez sin avanzar: "Sin un plan ordenado y alguien que te lo revise, es muy difícil sostenerlo."
+
+PLANES: Free $0 (10 mensajes/día) · Plus $20 USD/mes · Pro $100 USD/mes cupos limitados`;
+
+  if(!mp||!day){
+    // Sin plan: partes 1, 2 y 4
+    return BASE+PARTE1+PARTE2+PARTE4;
+  }
+
+  // Con plan: agregar parte 3 + JSON del plan
+  const bloque=getBloque(day);
+  const tareaHoy=bloque?.tareas_diarias?.slice(0,2)||[];
+  const semanaIdx=Math.floor((day-1)/7);
+  const tareaSemana=bloque?.tareas_semanales?.[semanaIdx%bloque.tareas_semanales.length]||'';
+
+  const PARTE3=`
+
+════════ EL PLAN DE ESTE CLIENTE ════════
+
+Este cliente tiene su Método Punto Cero activo. TODO lo que hagas se filtra por este plan.
+
+Objetivo principal: ${mp.objetivo_principal||U.OBJETIVO}
+Cuello de botella: ${mp.cuello_botella||'A definir'}
+Día actual: ${day} de 90
+Tarea/s de hoy: ${tareaHoy.join(' · ')||'Ver plan'}
+Tarea de esta semana: ${tareaSemana||'Ver plan'}
+${mp.instrucciones_consultor?`Instrucciones del consultor: ${mp.instrucciones_consultor}`:''}
+
+INDICADORES:
+${(mp.indicadores||[]).map(i=>`· ${i.nombre}: inicio ${i.inicial} → meta ${i.meta}`).join('\n')||'A definir'}
+
+REGLA DEL FILTRO — antes de responder cualquier cosa, preguntate: "¿Esto acerca al cliente a su objetivo?"
+· SÍ → respondé y conectalo explícitamente con el objetivo o la tarea
+· NO → devolvelo al foco: "Entiendo, pero estás en el día ${day} y tu objetivo es ${mp.objetivo_principal||U.OBJETIVO}. Tu tarea de hoy es ${tareaHoy[0]||'tu tarea del plan'}. ¿Avanzaste con eso?"
+
+DISTRACCIÓN vs CAMBIO REAL DE RUMBO:
+· Distracción → devolvelo al plan
+· Cambio real → "Eso cambia el panorama y no es algo que ajustemos acá sobre la marcha. Anotalo para la revisión con el equipo."`;
+
+  return BASE+PARTE1+PARTE2+PARTE4+PARTE3;
+}
+
+// ── PRE-DIAGNÓSTICO (modo sin plan) ────────────
+// NEXUS maneja esto en la conversación; isDiag se activa cuando detectamos
+// que el usuario está en proceso de contratar
+
+// ── MI PLAN ────────────────────────────────────
+function getDay(){
+  const mp=U.METODO_PUNTO_CERO;
+  if(!mp||!mp.fecha_inicio)return null;
+  const diff=Math.floor((new Date()-new Date(mp.fecha_inicio))/(1000*60*60*24))+1;
+  return Math.min(diff,90);
+}
+function getBloque(day){
+  const mp=U.METODO_PUNTO_CERO;
+  if(!mp||!mp.bloques)return null;
+  if(day<=30)return mp.bloques[0];
+  if(day<=60)return mp.bloques[1];
+  return mp.bloques[2];
+}
+
+function renderPlan(){
+  const c=document.getElementById('planContent');
+  const mp=U.METODO_PUNTO_CERO;
+  const hasPaid=U.PLAN==='Plus'||U.PLAN==='Pro';
+  if(!hasPaid){
+    c.innerHTML=`<div class="locked-screen"><div class="locked-icon">📋</div><div class="locked-title">PLAN DE ACCIÓN</div><div class="locked-sub">Tu plan de 90 días se activa con los planes Plus o Pro.</div><button class="locked-btn" onclick="switchView('planes')">VER PLANES →</button></div>`;
+    return;
+  }
+  if(!mp){
+    c.innerHTML=`<div class="locked-screen"><div class="locked-icon">⏳</div><div class="locked-title">PLAN EN PREPARACIÓN</div><div class="locked-sub">El equipo de STILE SERVICE está preparando tu Método Punto Cero. Te avisamos cuando esté listo.</div><div style="margin-top:8px;font-size:13px;color:#555;">¿Preguntas? <a href="https://wa.me/${WA}" target="_blank" style="color:var(--green)">Contactá al equipo →</a></div></div>`;
+    return;
+  }
+  const day=getDay();
+  const pct=Math.round((day/90)*100);
+  const bloque=getBloque(day);
+  const tareaHoy=bloque?.tareas_diarias||[];
+  const semanaIdx=Math.floor((day-1)/7);
+  const tareaSemana=bloque?.tareas_semanales?.[semanaIdx%bloque.tareas_semanales.length];
+  const done=U.TAREAS_COMPLETADAS||[];
+  const mot=MOTIVACIONAL[day%MOTIVACIONAL.length];
+  const indicadores=mp.indicadores||[];
+
+  const ckItem=(t,key)=>{
+    const isDone=done.includes(key);
+    return`<div class="ck-item"><input type="checkbox" class="ck-cb" ${isDone?'checked':''} onchange="toggleTask('${key}')"><span class="ck-txt ${isDone?'done':''}">${escH(t)}</span></div>`;
+  };
+
+  c.innerHTML=`<div class="plan-view">
+    <div class="day-block"><div class="day-num">${day}</div><div class="day-lbl">de 90 días</div></div>
+    <div class="pcard"><div class="pcard-title">Progreso general</div><div class="prog-wrap"><div class="prog-bar" style="width:${pct}%"></div></div><div style="font-size:12px;color:var(--muted);margin-top:5px;text-align:right;">${pct}% del ciclo</div></div>
+    ${U.OBJETIVO?`<div class="pcard"><div class="pcard-title">Tu objetivo</div><div style="font-size:15px;line-height:1.6;font-style:italic;color:var(--white);">"${escH(mp.objetivo_principal||U.OBJETIVO)}"</div></div>`:''}
+    ${tareaHoy.length?`<div class="pcard"><div class="pcard-title">Tareas de hoy</div>${tareaHoy.map((t,i)=>ckItem(t,'hoy-'+i)).join('')}</div>`:''}
+    ${tareaSemana?`<div class="pcard"><div class="pcard-title">Tarea de esta semana</div>${ckItem(tareaSemana,'sem-'+semanaIdx)}</div>`:''}
+    ${indicadores.length?`<div class="pcard"><div class="pcard-title">Indicadores</div>${indicadores.map(i=>`<div class="indicador-row"><span class="ind-nombre">${escH(i.nombre)}</span><div class="ind-vals"><span class="ind-val">Inicio: ${i.inicial}</span><span class="ind-val meta">Meta: ${i.meta}</span></div></div>`).join('')}</div>`:''}
+    <div class="mot">${mot}</div>
+  </div>`;
+}
+
+async function toggleTask(key){
+  const done=U.TAREAS_COMPLETADAS||[];
+  const idx=done.indexOf(key);
+  if(idx>-1)done.splice(idx,1);else done.push(key);
+  U.TAREAS_COMPLETADAS=done;
+  await sb.from('USERS').update({TAREAS_COMPLETADAS:done,ULTIMA_TAREA_MARCADA:new Date().toISOString()}).eq('ID',user.id);
+  renderPlan();
+}
+
+// ── MI DOCUMENTO ───────────────────────────────
+function renderDoc(){
+  const c=document.getElementById('docContent');
+  const mp=U.METODO_PUNTO_CERO;
+  const hasPaid=U.PLAN==='Plus'||U.PLAN==='Pro';
+  if(!hasPaid){
+    c.innerHTML=`<div class="locked-screen"><div class="locked-icon">📄</div><div class="locked-title">MI DOCUMENTO</div><div class="locked-sub">Tu Método Punto Cero se activa con los planes Plus o Pro.</div><button class="locked-btn" onclick="switchView('planes')">VER PLANES →</button></div>`;
+    return;
+  }
+  const link=mp?.doc_link||U.DOC_LINK;
+  if(!link){
+    c.innerHTML=`<div class="locked-screen"><div class="locked-icon">⏳</div><div class="locked-title">DOCUMENTO EN PREPARACIÓN</div><div class="locked-sub">Tu Método Punto Cero aparecerá acá cuando el equipo lo cargue.</div><div style="margin-top:8px;font-size:13px;color:#555;"><a href="https://wa.me/${WA}" target="_blank" style="color:var(--green)">Consultá al equipo →</a></div></div>`;
+    return;
+  }
+  const m=link.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  const url=m?`https://drive.google.com/file/d/${m[1]}/preview`:link;
+  c.innerHTML=`<div class="doc-view"><div class="doc-frame"><iframe src="${url}" allowfullscreen></iframe></div></div>`;
+}
+
+// ── PLANES ─────────────────────────────────────
+function renderPlanes(){
+  const p=U.PLAN;
+  const bF=document.getElementById('btnFree');
+  const bP=document.getElementById('btnPlus');
+  const bPr=document.getElementById('btnPro');
+  bF.textContent=p==='Free'?'PLAN ACTUAL':'PLAN FREE';
+  bF.className=p==='Free'?'pln-btn cur':'pln-btn sec';
+  bP.textContent=p==='Plus'?'PLAN ACTUAL':'CONTRATAR PLUS';
+  bP.className=p==='Plus'?'pln-btn cur':'pln-btn sec';
+  bPr.textContent=p==='Pro'?'PLAN ACTUAL':'CONTRATAR PRO';
+  bPr.className=p==='Pro'?'pln-btn cur':'pln-btn pri';
+}
+
+function selectPlan(label,price){
+  const msg=encodeURIComponent(`Hola! Soy ${U.NOMBRE} y quiero contratar el plan ${label} de STILE SERVICE ($${price} USD/mes).`);
+  window.open(`https://wa.me/${WA}?text=${msg}`,'_blank');
+}
+
+// ── BADGE & COUNTER ────────────────────────────
+function updateBadge(){
+  const b=document.getElementById('pbadge');
+  b.textContent=U.PLAN.toUpperCase();
+  b.className='pbadge '+(U.PLAN==='Free'?'free':U.PLAN==='Plus'?'plus':'pro');
+}
+
+function checkDayReset(){
+  const today=new Date().toISOString().split('T')[0];
+  if(U.FECHA_CONTADOR!==today){
+    U.MENSAJES_HOY=0;U.FECHA_CONTADOR=today;
+  }
+}
+
+function updateCounter(){
+  const ctr=document.getElementById('msgCounter');
+  if(U.PLAN!=='Free'){ctr.style.display='none';return;}
+  const rem=Math.max(0,FREE_LIMIT-(U.MENSAJES_HOY||0));
+  ctr.style.display='block';
+  ctr.innerHTML=`<span>${rem}</span> mensajes hoy`;
+}
+
+// ── SAVE ───────────────────────────────────────
+async function saveProfile(){
+  if(!user)return;
+  await sb.from('USERS').update({
+    HISTORIAL_CHAT:historial,
+    MENSAJES_HOY:U.MENSAJES_HOY||0,
+    FECHA_CONTADOR:U.FECHA_CONTADOR||new Date().toISOString().split('T')[0],
+    ULTIMO_ACCESO:new Date().toISOString()
+  }).eq('ID',user.id);
+}
+
+// ── UTILS ──────────────────────────────────────
+function escH(t){if(!t)return'';return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+function fmtMsg(t){if(!t)return'';return String(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');}
+</script>
+</body>
+</html>
